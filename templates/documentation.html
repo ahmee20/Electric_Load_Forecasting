@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documentation - Energy Demand Forecasting</title>
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2ecc71;
+            --accent-color: #e74c3c;
+            --text-color: #333;
+            --light-text: #666;
+            --background-color: #f5f7fa;
+            --card-background: #fff;
+            --border-color: #ddd;
+            --shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--background-color);
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+        
+        header {
+            background-color: var(--card-background);
+            box-shadow: var(--shadow);
+            padding: 15px 0;
+            margin-bottom: 20px;
+        }
+        
+        header .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+        }
+        
+        .logo .icon {
+            font-size: 24px;
+            margin-right: 10px;
+        }
+        
+        .logo h1 {
+            font-size: 20px;
+            font-weight: 600;
+        }
+        
+        nav ul {
+            display: flex;
+            list-style: none;
+        }
+        
+        nav ul li {
+            margin-left: 20px;
+        }
+        
+        nav ul li a {
+            text-decoration: none;
+            color: var(--text-color);
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        nav ul li a:hover,
+        nav ul li a.active {
+            color: var(--primary-color);
+        }
+        
+        .card {
+            background-color: var(--card-background);
+            border-radius: 5px;
+            box-shadow: var(--shadow);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .card h2 {
+            margin-bottom: 15px;
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .card p {
+            color: var(--text-color);
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+        
+        .documentation {
+            padding: 20px 0;
+        }
+        
+        .documentation h1 {
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+        
+        .documentation h2 {
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+        
+        .documentation h3 {
+            margin: 15px 0 10px;
+            font-size: 18px;
+        }
+        
+        .documentation ul,
+        .documentation ol {
+            margin-left: 20px;
+            margin-bottom: 15px;
+        }
+        
+        .documentation p {
+            margin-bottom: 15px;
+        }
+        
+        footer {
+            background-color: var(--card-background);
+            padding: 20px 0;
+            margin-top: 40px;
+            text-align: center;
+            color: var(--light-text);
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="logo">
+                <span class="icon">⚡</span>
+                <h1>Energy Demand Forecast</h1>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="/">Dashboard</a></li>
+                    <li><a href="/documentation" class="active">Documentation</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <div class="container">
+            <div class="documentation">
+                <h1>Energy Demand Forecasting Documentation</h1>
+                
+                <div class="card">
+                    <h2>Project Overview</h2>
+                    <p>This application provides advanced energy demand forecasting capabilities using machine learning and clustering techniques. It allows users to analyze historical energy consumption patterns, identify similar usage clusters, and predict future demand based on weather conditions and temporal factors.</p>
+                    <p>The system combines multiple forecasting models with interactive visualizations to help energy planners, utilities, and researchers make data-driven decisions.</p>
+                </div>
+                
+                <div class="card">
+                    <h2>Key Features</h2>
+                    <ul>
+                        <li>City-specific energy demand analysis</li>
+                        <li>K-means clustering of energy consumption patterns</li>
+                        <li>Multiple forecasting models (Random Forest, XGBoost, ARIMA, SARIMA)</li>
+                        <li>Interactive visualizations of clusters and forecasts</li>
+                        <li>Adjustable parameters for customized analysis</li>
+                        <li>Comprehensive performance metrics</li>
+                    </ul>
+                </div>
+                
+                <div class="card">
+                    <h2>Methodology</h2>
+                    
+                    <h3>Data Preprocessing</h3>
+                    <p>Raw energy demand and weather data undergo several preprocessing steps:</p>
+                    <ul>
+                        <li>Missing value imputation using mean/median values</li>
+                        <li>Feature engineering to extract temporal patterns (hour, day, month, season)</li>
+                        <li>Standardization of numerical features</li>
+                        <li>Anomaly detection and removal using Z-scores and Isolation Forest</li>
+                    </ul>
+                    
+                    <h3>Clustering Analysis</h3>
+                    <p>K-means clustering is applied to identify distinct energy usage patterns:</p>
+                    <ul>
+                        <li>Features include temperature, humidity, wind speed, and demand</li>
+                        <li>Optimal k determined using elbow method and silhouette scores</li>
+                        <li>PCA used for dimensionality reduction and visualization</li>
+                        <li>Cluster analysis reveals weather-dependent consumption patterns</li>
+                    </ul>
+                    
+                    <h3>Forecasting Models</h3>
+                    <p>Multiple forecasting approaches are implemented:</p>
+                    <ul>
+                        <li><strong>Random Forest:</strong> Ensemble of decision trees with hyperparameter tuning</li>
+                        <li><strong>XGBoost:</strong> Gradient boosting optimized for performance</li>
+                        <li><strong>ARIMA:</strong> AutoRegressive Integrated Moving Average for time series forecasting</li>
+                        <li><strong>SARIMA:</strong> Seasonal ARIMA that captures seasonal patterns in time series data</li>
+                        <li><strong>Baseline:</strong> Naive forecast using previous day's same hour</li>
+                    </ul>
+                </div>
+                
+                <div class="card">
+                    <h2>Using the Application</h2>
+                    
+                    <h3>Input Parameters</h3>
+                    <p>To begin your analysis:</p>
+                    <ol>
+                        <li>Select a city from the dropdown menu</li>
+                        <li>Choose a start date and end date for your analysis period</li>
+                        <li>Click "Analyze Data" to process your selection</li>
+                    </ol>
+                    
+                    <h3>Model Controls</h3>
+                    <p>Customize your analysis with these controls:</p>
+                    <ul>
+                        <li><strong>Number of Clusters (k):</strong> Adjust the slider to change the number of clusters in the K-means algorithm</li>
+                        <li><strong>Look-back Window:</strong> Set how many previous hours to consider for time series forecasting</li>
+                        <li><strong>Forecasting Model:</strong> Choose between Random Forest, XGBoost, ARIMA, and SARIMA algorithms</li>
+                    </ul>
+                    
+                    <h3>Interpreting Results</h3>
+                    <p>The application provides two main visualizations:</p>
+                    <ul>
+                        <li><strong>Cluster Visualization:</strong> Shows how data points group together based on similar characteristics. Points of the same color belong to the same cluster.</li>
+                        <li><strong>Forecast Plot:</strong> Compares actual energy demand (blue line) with predicted demand (red dashed line). The closer these lines, the more accurate the forecast.</li>
+                    </ul>
+                    <p>Performance metrics (MSE, MAE, R²) help you evaluate forecast accuracy. Lower MSE and MAE values and higher R² values indicate better performance.</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2023 Energy Demand Forecasting</p>
+        </div>
+    </footer>
+</body>
+</html>

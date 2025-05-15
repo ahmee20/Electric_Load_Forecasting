@@ -1,0 +1,1621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Energy Demand Forecasting</title>
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2ecc71;
+            --accent-color: #e74c3c;
+            --text-color: #333;
+            --light-text: #666;
+            --background-color: #f5f7fa;
+            --card-background: #fff;
+            --border-color: #ddd;
+            --shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--background-color);
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+        
+        header {
+            background-color: var(--card-background);
+            box-shadow: var(--shadow);
+            padding: 15px 0;
+            margin-bottom: 20px;
+        }
+        
+        header .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+        }
+        
+        .logo .icon {
+            font-size: 24px;
+            margin-right: 10px;
+        }
+        
+        .logo h1 {
+            font-size: 20px;
+            font-weight: 600;
+        }
+        
+        nav ul {
+            display: flex;
+            list-style: none;
+        }
+        
+        nav ul li {
+            margin-left: 20px;
+        }
+        
+        nav ul li a {
+            text-decoration: none;
+            color: var(--text-color);
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        nav ul li a:hover,
+        nav ul li a.active {
+            color: var(--primary-color);
+        }
+        
+        .card {
+            background-color: var(--card-background);
+            border-radius: 5px;
+            box-shadow: var(--shadow);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .card h2 {
+            margin-bottom: 15px;
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .card p {
+            color: var(--text-color);
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+        
+        .dashboard {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        
+        input,
+        select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        input[type="range"] {
+            padding: 0;
+        }
+        
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        button:hover {
+            background-color: #2980b9;
+        }
+        
+        .help-text {
+            font-size: 12px;
+            color: var(--light-text);
+            margin-top: 5px;
+        }
+        
+        .radio-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .radio-group label {
+            display: flex;
+            align-items: center;
+            font-weight: normal;
+            cursor: pointer;
+        }
+        
+        .radio-group input[type="radio"] {
+            width: auto;
+            margin-right: 8px;
+        }
+        
+        .tabs {
+            width: 100%;
+        }
+        
+        .tab-header {
+            display: flex;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .tab-btn {
+            background: none;
+            color: var(--text-color);
+            border: none;
+            padding: 10px 15px;
+            margin-right: 5px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border-bottom: 2px solid transparent;
+        }
+        
+        .tab-btn.active {
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--primary-color);
+        }
+        
+        .tab-pane {
+            display: none;
+        }
+        
+        .tab-pane.active {
+            display: block;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 400px;
+            margin-top: 20px;
+        }
+        
+        .loading {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.8);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+        }
+        
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top: 4px solid var(--primary-color);
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin-bottom: 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .empty-state {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: rgba(245, 247, 250, 0.5);
+            z-index: 5;
+        }
+        
+        .empty-state p {
+            text-align: center;
+            color: var(--light-text);
+        }
+        
+        .metrics {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 10px;
+        }
+        
+        .metric-badge {
+            background-color: #f1f5f9;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+        
+        .model-info {
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            border-left: 4px solid var(--primary-color);
+        }
+        
+        .model-info h3 {
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+        
+        .model-info p {
+            font-size: 14px;
+            color: var(--light-text);
+        }
+        
+        .model-rf { border-left-color: #4285F4; }
+        .model-xgb { border-left-color: #EA4335; }
+        .model-arima { border-left-color: #FBBC05; }
+        .model-sarima { border-left-color: #34A853; }
+        
+        footer {
+            background-color: var(--card-background);
+            padding: 20px 0;
+            margin-top: 40px;
+            text-align: center;
+            color: var(--light-text);
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <div class="container">
+        <div class="logo">
+            <span class="icon">⚡</span>
+            <h1>Energy Demand Forecast</h1>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="/" class="active">Dashboard</a></li>
+                <li><a href="/documentation">Documentation</a></li>
+            </ul>
+        </nav>
+    </div>
+</header>
+
+<main>
+    <div class="container">
+        <div class="dashboard">
+            <div class="panel">
+                <div class="card">
+                    <h2>Input Parameters</h2>
+                    <form id="input-form">
+                        <div class="form-group">
+                            <label for="city">City</label>
+                            <select id="city" name="city" required>
+                                <option value="">Select a city</option>
+                                {% for city in cities %}
+                                <option value="{{ city }}">{{ city|title }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="start-date">Start Date</label>
+                            <input type="date" id="start-date" name="start-date" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="end-date">End Date</label>
+                            <input type="date" id="end-date" name="end-date" required>
+                        </div>
+                        <button type="submit" id="analyze-btn">Analyze Data</button>
+                    </form>
+                </div>
+
+                <div class="card">
+                    <h2>Model Controls</h2>
+                    <div class="tabs">
+                        <div class="tab-header">
+                            <button class="tab-btn active" data-tab="clustering">Clustering</button>
+                            <button class="tab-btn" data-tab="forecasting">Forecasting</button>
+                        </div>
+                        <div class="tab-content">
+                            <div class="tab-pane active" id="clustering-tab">
+                                <div class="form-group">
+                                    <label for="k-slider">Number of Clusters (k): <span id="k-value">3</span></label>
+                                    <input type="range" id="k-slider" min="2" max="10" value="3" step="1">
+                                    <p class="help-text">Adjust the number of clusters for K-means algorithm</p>
+                                </div>
+                                <div class="form-group">
+                                    <button id="overall-cluster-btn" class="secondary-btn">View Overall Clustering</button>
+                                    <p class="help-text">See clustering across all cities</p>
+                                </div>
+                            </div>
+                            <div class="tab-pane" id="forecasting-tab">
+                                <div class="form-group">
+                                    <label for="lookback-slider">Look-back Window: <span id="lookback-value">24</span> hours</label>
+                                    <input type="range" id="lookback-slider" min="1" max="72" value="24" step="1">
+                                    <p class="help-text">Number of previous hours to consider for forecasting</p>
+                                </div>
+                                <div class="form-group">
+                                    <label>Forecasting Model</label>
+                                    <div class="radio-group">
+                                        <label>
+                                            <input type="radio" name="model" value="rf" checked>
+                                            Random Forest
+                                        </label>
+                                        <label>
+                                            <input type="radio" name="model" value="xgb">
+                                            XGBoost
+                                        </label>
+                                        <label>
+                                            <input type="radio" name="model" value="arima">
+                                            ARIMA
+                                        </label>
+                                        <label>
+                                            <input type="radio" name="model" value="sarima">
+                                            SARIMA
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="main-content">
+                <div class="tabs">
+                    <div class="tab-header">
+                        <button class="tab-btn active" data-tab="visualization">City Clustering</button>
+                        <button class="tab-btn" data-tab="overall-clustering">Overall Clustering</button>
+                        <button class="tab-btn" data-tab="forecast">Forecast Plot</button>
+                        <button class="tab-btn" data-tab="model-comparison">Model Comparison</button>
+                        <button class="tab-btn" data-tab="help">Help & Documentation</button>
+                    </div>
+                    <div class="tab-content">
+                        <div class="tab-pane active" id="visualization-tab">
+                            <div class="card">
+                                <h2>City Cluster Visualization</h2>
+                                <p>Interactive PCA plot colored by cluster for the selected city</p>
+                                <div class="chart-container">
+                                    <canvas id="cluster-chart"></canvas>
+                                    <div id="cluster-loading" class="loading" style="display: none;">
+                                        <div class="spinner"></div>
+                                        <p>Processing cluster analysis...</p>
+                                    </div>
+                                    <div id="cluster-empty" class="empty-state">
+                                        <p>Please select a city and date range to view cluster visualization.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tab-pane" id="overall-clustering-tab">
+                            <div class="card">
+                                <h2>Overall Clustering Visualization</h2>
+                                <p>Interactive PCA plot showing clusters across all cities</p>
+                                <div class="chart-container">
+                                    <canvas id="overall-cluster-chart"></canvas>
+                                    <div id="overall-cluster-loading" class="loading" style="display: none;">
+                                        <div class="spinner"></div>
+                                        <p>Processing overall cluster analysis...</p>
+                                    </div>
+                                    <div id="overall-cluster-empty" class="empty-state">
+                                        <p>Click "View Overall Clustering" to see clusters across all cities.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tab-pane" id="forecast-tab">
+                            <div class="card">
+                                <h2>Forecast Plot</h2>
+                                <p>Time-series chart of actual vs. predicted demand</p>
+                                <div class="metrics" id="forecast-metrics"></div>
+                                <div class="chart-container">
+                                    <canvas id="forecast-chart"></canvas>
+                                    <div id="forecast-loading" class="loading" style="display: none;">
+                                        <div class="spinner"></div>
+                                        <p>Processing forecast data...</p>
+                                    </div>
+                                    <div id="forecast-empty" class="empty-state">
+                                        <p>Please select a city and date range to view forecast results.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tab-pane" id="model-comparison-tab">
+                            <div class="card">
+                                <h2>Model Comparison</h2>
+                                <p>Compare performance of different forecasting models</p>
+                                <div class="chart-container">
+                                    <canvas id="model-comparison-chart"></canvas>
+                                    <div id="model-comparison-loading" class="loading" style="display: none;">
+                                        <div class="spinner"></div>
+                                        <p>Generating model comparison...</p>
+                                    </div>
+                                    <div id="model-comparison-empty" class="empty-state">
+                                        <p>Select a city and analyze data to compare models.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tab-pane" id="help-tab">
+                            <div class="card">
+                                <h2>Help & Documentation</h2>
+                                <div class="tabs">
+                                    <div class="tab-header">
+                                        <button class="tab-btn active" data-tab="instructions">Instructions</button>
+                                        <button class="tab-btn" data-tab="approach">Approach</button>
+                                        <button class="tab-btn" data-tab="technical">Technical Details</button>
+                                    </div>
+                                    <div class="tab-content">
+                                        <div class="tab-pane active" id="instructions-tab">
+                                            <h3>Using the Application</h3>
+                                            <p>Step-by-step guide to using the energy demand forecasting tool</p>
+                                            <h4>Input Form</h4>
+                                            <ul>
+                                                <li>Select a city from the dropdown menu</li>
+                                                <li>Choose a start date and end date for your analysis</li>
+                                                <li>Click "Analyze Data" to process your selection</li>
+                                            </ul>
+                                            <h4>Model Controls</h4>
+                                            <ul>
+                                                <li>Adjust the number of clusters (k) using the slider</li>
+                                                <li>Set the look-back window for time series forecasting</li>
+                                                <li>Choose between different forecasting models</li>
+                                            </ul>
+                                            <h4>Visualization Tabs</h4>
+                                            <ul>
+                                                <li>City Clustering: View PCA projection of data points colored by cluster for the selected city</li>
+                                                <li>Overall Clustering: View clusters across all cities</li>
+                                                <li>Forecast Plot: Compare actual vs. predicted energy demand</li>
+                                                <li>Model Comparison: Compare performance of different forecasting models</li>
+                                                <li>Help & Documentation: Access this help section</li>
+                                            </ul>
+                                        </div>
+                                        <div class="tab-pane" id="approach-tab">
+                                            <h3>Clustering Approach</h3>
+                                            <p>This application uses K-means clustering to group similar energy demand patterns based on weather and demand features. The clustering helps identify distinct usage patterns that can inform energy planning and optimization.</p>
+                                            <h4>Key Features Used</h4>
+                                            <ul>
+                                                <li>Temperature: Ambient temperature affects heating and cooling demand</li>
+                                                <li>Humidity: Impacts cooling efficiency and comfort levels</li>
+                                                <li>Wind Speed: Affects heating/cooling loads and renewable generation</li>
+                                                <li>Energy Demand: Historical consumption patterns</li>
+                                            </ul>
+                                            <p>Principal Component Analysis (PCA) is used to reduce the dimensionality of the data for visualization purposes. The scatter plot shows the first two principal components, with points colored by their assigned cluster.</p>
+                                            
+                                            <h3>Forecasting Approach</h3>
+                                            <p>The application offers multiple forecasting models to predict energy demand based on historical patterns and weather conditions:</p>
+                                            <h4>Available Models</h4>
+                                            <ul>
+                                                <li><strong>Random Forest:</strong> Ensemble of decision trees that captures non-linear relationships</li>
+                                                <li><strong>XGBoost:</strong> Gradient boosting algorithm optimized for performance</li>
+                                                <li><strong>ARIMA:</strong> AutoRegressive Integrated Moving Average for time series forecasting</li>
+                                                <li><strong>SARIMA:</strong> Seasonal ARIMA that captures seasonal patterns in time series data</li>
+                                            </ul>
+                                            <p>The look-back window parameter determines how many previous time steps are considered when making predictions. A larger window captures longer-term patterns but may introduce noise.</p>
+                                        </div>
+                                        <div class="tab-pane" id="technical-tab">
+                                            <h3>Data Sources</h3>
+                                            <p>The application uses a combined dataset of historical energy demand and weather conditions for multiple cities. The data includes:</p>
+                                            <ul>
+                                                <li>Hourly energy demand measurements (MWh)</li>
+                                                <li>Weather parameters (temperature, humidity, wind speed)</li>
+                                                <li>Temporal features (hour, day of week, month, season)</li>
+                                            </ul>
+                                            <p>Missing values in the dataset are handled through appropriate imputation techniques: mean for temperature and wind speed, median for humidity.</p>
+                                            
+                                            <h3>Algorithms</h3>
+                                            <h4>K-means Clustering</h4>
+                                            <p>K-means partitions observations into k clusters by minimizing the within-cluster sum of squares. The algorithm:</p>
+                                            <ol>
+                                                <li>Initializes k centroids randomly</li>
+                                                <li>Assigns each observation to the nearest centroid</li>
+                                                <li>Updates centroids based on the mean of assigned observations</li>
+                                                <li>Repeats steps 2-3 until convergence</li>
+                                            </ol>
+                                            
+                                            <h4>Time Series Forecasting</h4>
+                                            <p>The forecasting models are trained on historical data with features including:</p>
+                                            <ul>
+                                                <li>Weather variables (temperature, humidity, wind speed)</li>
+                                                <li>Temporal features (hour, day of week, month, season)</li>
+                                                <li>City-specific characteristics (one-hot encoded)</li>
+                                            </ul>
+                                            
+                                            <h3>Evaluation Metrics</h3>
+                                            <p>The following metrics are used to evaluate forecasting performance:</p>
+                                            <ul>
+                                                <li><strong>Mean Squared Error (MSE):</strong> Average of squared differences between predicted and actual values</li>
+                                                <li><strong>Mean Absolute Error (MAE):</strong> Average of absolute differences between predicted and actual values</li>
+                                                <li><strong>R-squared (R²):</strong> Proportion of variance in the dependent variable explained by the model</li>
+                                            </ul>
+                                            <p>For clustering, the silhouette score is used to evaluate cluster quality, measuring how similar an object is to its own cluster compared to other clusters.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer>
+    <div class="container">
+        <p>&copy; 2023 Energy Demand Forecasting</p>
+    </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+    <script>
+        // Global variables
+        let clusterChart = null;
+        let overallClusterChart = null;
+        let forecastChart = null;
+        let modelComparisonChart = null;
+        const formData = {
+            city: "",
+            startDate: "",
+            endDate: "",
+            k: 3,
+            lookback: 24,
+            model: "rf",
+        };
+        
+        // Store model results for comparison
+        const modelResults = {
+            rf: null,
+            xgb: null,
+            arima: null,
+            sarima: null
+        };
+
+        // Model information
+        const modelInfo = {
+            rf: {
+                name: "Random Forest",
+                description: "An ensemble learning method that operates by constructing multiple decision trees during training. Random Forest tends to average out extreme values and performs well with non-linear relationships, but may struggle with extrapolation beyond training data.",
+                strengths: ["Handles non-linear relationships", "Robust to outliers", "Good overall performance"],
+                weaknesses: ["Struggles with extrapolation", "Tends to average out extreme values", "May underestimate sudden changes"]
+            },
+            xgb: {
+                name: "XGBoost",
+                description: "A gradient boosting framework that uses an ensemble of weak prediction models to create a stronger model. XGBoost excels at structured data and can capture complex patterns better than Random Forest, but may overfit on noisy data.",
+                strengths: ["Excellent performance on structured data", "Better at handling outliers than RF", "Captures complex patterns well"],
+                weaknesses: ["May overfit on noisy data", "More complex to tune", "Computationally intensive"]
+            },
+            arima: {
+                name: "ARIMA",
+                description: "AutoRegressive Integrated Moving Average is a statistical model for analyzing and forecasting time series data. ARIMA is good for stationary time series but struggles with non-linear relationships and external variables like weather.",
+                strengths: ["Good for stationary time series", "Captures autoregressive patterns", "Simple to interpret"],
+                weaknesses: ["Poor at handling external variables", "Struggles with non-linear relationships", "More oscillation in predictions"]
+            },
+            sarima: {
+                name: "SARIMA",
+                description: "Seasonal ARIMA extends the ARIMA model to support seasonal data. It's better than ARIMA for data with clear seasonal patterns, making it more suitable for cities with strong seasonal energy demand variations.",
+                strengths: ["Good for seasonal time series", "Captures both trend and seasonality", "Better than ARIMA for seasonal patterns"],
+                weaknesses: ["Still struggles with external variables", "Complex parameter tuning", "Requires longer history for seasonal patterns"]
+            }
+        };
+
+        // Initialize the application
+        document.addEventListener("DOMContentLoaded", function() {
+            console.log("App initialized");
+            
+            // Set default dates
+            setDefaultDates();
+            
+            // Set up event listeners
+            setupEventListeners();
+            
+            // Initialize tabs
+            initTabs();
+        });
+
+        // Set default dates
+        function setDefaultDates() {
+            const today = new Date();
+            const oneMonthAgo = new Date();
+            oneMonthAgo.setMonth(today.getMonth() - 1);
+
+            const startDateInput = document.getElementById("start-date");
+            const endDateInput = document.getElementById("end-date");
+
+            startDateInput.value = formatDate(oneMonthAgo);
+            endDateInput.value = formatDate(today);
+            
+            // Update form data with default dates
+            formData.startDate = formatDate(oneMonthAgo);
+            formData.endDate = formatDate(today);
+        }
+
+        // Format date as YYYY-MM-DD
+        function formatDate(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, "0");
+            const day = String(date.getDate()).padStart(2, "0");
+            return `${year}-${month}-${day}`;
+        }
+
+        // Set up event listeners
+        function setupEventListeners() {
+            // Form submission
+            document.getElementById("input-form").addEventListener("submit", function(e) {
+                e.preventDefault();
+                
+                // Update form data
+                formData.city = document.getElementById("city").value;
+                formData.startDate = document.getElementById("start-date").value;
+                formData.endDate = document.getElementById("end-date").value;
+                
+                console.log("Form submitted:", formData);
+                
+                // Fetch data
+                fetchData();
+            });
+
+            // K slider
+            document.getElementById("k-slider").addEventListener("input", function(e) {
+                const value = e.target.value;
+                document.getElementById("k-value").textContent = value;
+                formData.k = parseInt(value);
+                
+                // If we already have data, update the clustering
+                if (formData.city && formData.startDate && formData.endDate) {
+                    fetchClusterData();
+                }
+            });
+
+            // Lookback slider
+            document.getElementById("lookback-slider").addEventListener("input", function(e) {
+                const value = e.target.value;
+                document.getElementById("lookback-value").textContent = value;
+                formData.lookback = parseInt(value);
+                
+                // If we already have data, update the forecast
+                if (formData.city && formData.startDate && formData.endDate) {
+                    fetchForecastData();
+                }
+            });
+
+            // Model selection
+            document.querySelectorAll('input[name="model"]').forEach(function(radio) {
+                radio.addEventListener("change", function(e) {
+                    formData.model = e.target.value;
+                    
+                    // If we already have data, update the forecast
+                    if (formData.city && formData.startDate && formData.endDate) {
+                        fetchForecastData();
+                    }
+                });
+            });
+            
+            // Overall clustering button
+            document.getElementById("overall-cluster-btn").addEventListener("click", function() {
+                fetchOverallClusterData();
+                
+                // Switch to the overall clustering tab
+                const tabBtn = document.querySelector('.tab-btn[data-tab="overall-clustering"]');
+                if (tabBtn) {
+                    tabBtn.click();
+                }
+            });
+
+            document.querySelector('.tab-btn[data-tab="forecast"]').addEventListener('click', function() {
+                if (formData.city && !forecastChart) {
+                    fetchForecastData();
+                }
+            });
+        }
+
+        // Initialize tabs
+        function initTabs() {
+            // For all tab buttons
+            document.querySelectorAll(".tab-btn").forEach(function(button) {
+                button.addEventListener("click", function() {
+                    const tabId = this.getAttribute("data-tab");
+                    const tabContainer = this.closest(".tabs");
+                    
+                    // Deactivate all tabs in this container
+                    tabContainer.querySelectorAll(".tab-btn").forEach(function(btn) {
+                        btn.classList.remove("active");
+                    });
+                    
+                    tabContainer.querySelectorAll(".tab-pane").forEach(function(pane) {
+                        pane.classList.remove("active");
+                    });
+                    
+                    // Activate the selected tab
+                    this.classList.add("active");
+                    
+                    // Find the corresponding tab pane
+                    let tabPaneId;
+                    if (tabId === "clustering" || tabId === "forecasting") {
+                        tabPaneId = tabId + "-tab";
+                    } else if (["visualization", "overall-clustering", "forecast", "model-comparison", "help"].includes(tabId)) {
+                        tabPaneId = tabId + "-tab";
+                    } else if (["instructions", "approach", "technical"].includes(tabId)) {
+                        tabPaneId = tabId + "-tab";
+                    }
+                    
+                    const tabPane = document.getElementById(tabPaneId);
+                    if (tabPane) {
+                        tabPane.classList.add("active");
+                    }
+                    
+                    // If switching to forecast tab, make sure to show the forecast chart
+                    if (tabId === "forecast" && formData.city) {
+                        // If we already have forecast data, make sure it's visible
+                        if (document.getElementById("forecast-chart").style.display === "none") {
+                            document.getElementById("forecast-chart").style.display = "block";
+                        }
+                        // If we don't have forecast data yet, fetch it
+                        if (!forecastChart && formData.city) {
+                            fetchForecastData();
+                        }
+                    }
+                });
+            });
+        }
+
+        // Fetch both cluster and forecast data
+        function fetchData() {
+            fetchClusterData();
+            fetchForecastData();
+            
+            // Reset model results
+            for (const model in modelResults) {
+                modelResults[model] = null;
+            }
+            
+            // Fetch data for all models for comparison
+            fetchAllModelsData();
+        }
+
+        // Add this function to prevent caching
+        function fetchWithNoCache(url, options) {
+            const timestamp = new Date().getTime();
+            const noCacheUrl = url + (url.includes('?') ? '&' : '?') + '_nocache=' + timestamp;
+            return fetch(noCacheUrl, options);
+        }
+
+        // Fetch cluster data
+        function fetchClusterData() {
+            // Show loading state
+            document.getElementById("cluster-empty").style.display = "none";
+            document.getElementById("cluster-loading").style.display = "flex";
+            
+            // Prepare request data
+            const requestData = {
+                city: formData.city,
+                start_date: formData.startDate,
+                end_date: formData.endDate,
+                k: formData.k
+            };
+            
+            console.log("Cluster request data:", requestData);
+            
+            // Make API request
+            fetch("/api/cluster", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(requestData),
+            })
+            .then(function(response) {
+                if (!response.ok) {
+                    return response.json().then(function(err) {
+                        throw new Error(err.error || "Failed to fetch cluster data");
+                    });
+                }
+                return response.json();
+            })
+            .then(function(data) {
+                console.log("Cluster data received:", data);
+                
+                // Hide loading state
+                document.getElementById("cluster-loading").style.display = "none";
+                
+                // Update chart
+                updateClusterChart(data);
+            })
+            .catch(function(error) {
+                console.error("Error fetching cluster data:", error);
+                
+                // Hide loading state and show empty state with error
+                document.getElementById("cluster-loading").style.display = "none";
+                document.getElementById("cluster-empty").style.display = "flex";
+                document.getElementById("cluster-empty").innerHTML = `
+                    <p>Error: ${error.message || "Failed to fetch cluster data"}</p>
+                `;
+            });
+        }
+        
+        // Fetch overall cluster data
+        function fetchOverallClusterData() {
+            // Show loading state
+            document.getElementById("overall-cluster-empty").style.display = "none";
+            document.getElementById("overall-cluster-loading").style.display = "flex";
+            
+            // Prepare request data
+            const requestData = {
+                k: formData.k
+            };
+            
+            console.log("Overall cluster request data:", requestData);
+            
+            // Make API request
+            fetch("/api/overall-cluster", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(requestData),
+            })
+            .then(function(response) {
+                if (!response.ok) {
+                    return response.json().then(function(err) {
+                        throw new Error(err.error || "Failed to fetch overall cluster data");
+                    });
+                }
+                return response.json();
+            })
+            .then(function(data) {
+                console.log("Overall cluster data received:", data);
+                
+                // Hide loading state
+                document.getElementById("overall-cluster-loading").style.display = "none";
+                
+                // Update chart
+                updateOverallClusterChart(data);
+            })
+            .catch(function(error) {
+                console.error("Error fetching overall cluster data:", error);
+                
+                // Hide loading state and show empty state with error
+                document.getElementById("overall-cluster-loading").style.display = "none";
+                document.getElementById("overall-cluster-empty").style.display = "flex";
+                document.getElementById("overall-cluster-empty").innerHTML = `
+                    <p>Error: ${error.message || "Failed to fetch overall cluster data"}</p>
+                `;
+            });
+        }
+
+    // Fetch forecast data
+    function fetchForecastData() {
+        // Show loading state
+        document.getElementById("forecast-empty").style.display = "none";
+        document.getElementById("forecast-loading").style.display = "flex";
+        
+        // Prepare request data
+        const requestData = {
+            city: formData.city,
+            start_date: formData.startDate,
+            end_date: formData.endDate,
+            lookback: formData.lookback,
+            model: formData.model
+        };
+        
+        console.log("Forecast request data:", requestData);
+        
+        // Make API request
+        fetch("/api/forecast", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(requestData),
+        })
+        .then(function(response) {
+            if (!response.ok) {
+                return response.json().then(function(err) {
+                    throw new Error(err.error || "Failed to fetch forecast data");
+                });
+            }
+            return response.json();
+        })
+        .then(function(data) {
+            console.log("Forecast data received:", data);
+            
+            // Validate data
+            if (!data.actual || !data.predicted || !data.timestamps) {
+                console.error("Invalid forecast data format:", data);
+                throw new Error("Invalid forecast data format");
+            }
+            
+            // Hide loading state
+            document.getElementById("forecast-loading").style.display = "none";
+            
+            // Update chart
+            updateForecastChart(data);
+            
+            // Update metrics
+            updateMetrics(data);
+            
+            // Store the results for this model
+            modelResults[data.model_type] = data;
+            
+            // Display input summary if available
+            if (data.input_summary) {
+                const metricsContainer = document.getElementById("forecast-metrics");
+                const summaryBadge = document.createElement("div");
+                summaryBadge.className = "metric-badge";
+                summaryBadge.style.backgroundColor = "#e2f0ff";
+                summaryBadge.textContent = data.input_summary;
+                metricsContainer.appendChild(summaryBadge);
+            }
+        })
+        .catch(function(error) {
+            console.error("Error fetching forecast data:", error);
+            
+            // Hide loading state and show empty state with error
+            document.getElementById("forecast-loading").style.display = "none";
+            document.getElementById("forecast-empty").style.display = "flex";
+            document.getElementById("forecast-empty").innerHTML = `
+                <p>Error: ${error.message || "Failed to fetch forecast data"}</p>
+            `;
+        });
+    }
+    
+    // Fetch data for all models for comparison
+    function fetchAllModelsData() {
+        // Show loading state
+        document.getElementById("model-comparison-empty").style.display = "none";
+        document.getElementById("model-comparison-loading").style.display = "flex";
+        
+        // Array of models to fetch
+        const models = ["rf", "xgb", "arima", "sarima"];
+        const promises = [];
+        
+        // Fetch data for each model
+        models.forEach(function(model) {
+            const requestData = {
+                city: formData.city,
+                start_date: formData.startDate,
+                end_date: formData.endDate,
+                lookback: formData.lookback,
+                model: model
+            };
+            
+            const promise = fetch("/api/forecast", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(requestData),
+            })
+            .then(response => response.json())
+            .then(data => {
+                modelResults[model] = data;
+                return data;
+            });
+            
+            promises.push(promise);
+        });
+        
+        // When all promises are resolved
+        Promise.all(promises)
+            .then(function(results) {
+                // Hide loading state
+                document.getElementById("model-comparison-loading").style.display = "none";
+                
+                // Update model comparison chart
+                updateModelComparisonChart(results);
+            })
+            .catch(function(error) {
+                console.error("Error fetching model comparison data:", error);
+                
+                // Hide loading state and show empty state with error
+                document.getElementById("model-comparison-loading").style.display = "none";
+                document.getElementById("model-comparison-empty").style.display = "flex";
+                document.getElementById("model-comparison-empty").innerHTML = `
+                    <p>Error: ${error.message || "Failed to fetch model comparison data"}</p>
+                `;
+            });
+    }
+
+// Fix the forecast chart display issue by modifying the updateForecastChart function
+
+// Find the updateForecastChart function and replace it with this improved version:
+function updateForecastChart(data) {
+    // Make sure the chart canvas is visible
+    document.getElementById("forecast-chart").style.display = "block";
+    
+    // Prepare data
+    const labels = data.timestamps;
+    
+    // Destroy previous chart if it exists
+    if (forecastChart) {
+        forecastChart.destroy();
+    }
+    
+    // Set colors based on model type
+    let predictedColor;
+    switch(data.model_type) {
+        case 'rf':
+            predictedColor = 'rgba(66, 133, 244, 1)'; // Google Blue
+            break;
+        case 'xgb':
+            predictedColor = 'rgba(234, 67, 53, 1)'; // Google Red
+            break;
+        case 'arima':
+            predictedColor = 'rgba(251, 188, 5, 1)'; // Google Yellow
+            break;
+        case 'sarima':
+            predictedColor = 'rgba(52, 168, 83, 1)'; // Google Green
+            break;
+        default:
+            predictedColor = 'rgba(255, 99, 132, 1)'; // Default red
+    }
+    
+    console.log("Rendering forecast chart with data:", {
+        labels: labels,
+        actual: data.actual,
+        predicted: data.predicted
+    });
+    
+    // Create new chart
+    const ctx = document.getElementById("forecast-chart").getContext("2d");
+    forecastChart = new Chart(ctx, {
+        type: "line",
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: "Actual Demand",
+                    data: data.actual,
+                    borderColor: "rgba(54, 162, 235, 1)",
+                    backgroundColor: "rgba(54, 162, 235, 0.1)",
+                    borderWidth: 2,
+                    tension: 0.1,
+                    fill: false
+                },
+                {
+                    label: `${modelInfo[data.model_type].name} Prediction`,
+                    data: data.predicted,
+                    borderColor: predictedColor,
+                    backgroundColor: predictedColor.replace('1)', '0.1)'),
+                    borderWidth: 2,
+                    borderDash: data.model_type === 'rf' || data.model_type === 'xgb' ? [] : [5, 5],
+                    tension: data.model_type === 'arima' || data.model_type === 'sarima' ? 0.3 : 0.1,
+                    fill: false
+                },
+            ],
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: "Time",
+                    },
+                    ticks: {
+                        maxRotation: 45,
+                        minRotation: 45
+                    }
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: "Energy Demand (MWh)",
+                    },
+                    beginAtZero: false
+                },
+            },
+            plugins: {
+                title: {
+                    display: true,
+                    text: `Energy Demand Forecast for ${data.city.toUpperCase()}`,
+                    font: {
+                        size: 16
+                    }
+                },
+                tooltip: {
+                    mode: 'index',
+                    intersect: false,
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            if (context.parsed.y !== null) {
+                                label += new Intl.NumberFormat('en-US', { 
+                                    minimumFractionDigits: 1,
+                                    maximumFractionDigits: 1 
+                                }).format(context.parsed.y) + ' MWh';
+                            }
+                            return label;
+                        }
+                    }
+                }
+            },
+        },
+    });
+}
+
+// Also modify the fetchForecastData function to add debugging
+function fetchForecastData() {
+    // Show loading state
+    document.getElementById("forecast-empty").style.display = "none";
+    document.getElementById("forecast-loading").style.display = "flex";
+    
+    // Prepare request data
+    const requestData = {
+        city: formData.city,
+        start_date: formData.startDate,
+        end_date: formData.endDate,
+        lookback: formData.lookback,
+        model: formData.model
+    };
+    
+    console.log("Forecast request data:", requestData);
+    
+    // Make API request
+    fetch("/api/forecast", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(requestData),
+    })
+    .then(function(response) {
+        if (!response.ok) {
+            return response.json().then(function(err) {
+                throw new Error(err.error || "Failed to fetch forecast data");
+            });
+        }
+        return response.json();
+    })
+    .then(function(data) {
+        console.log("Forecast data received:", data);
+        
+        // Validate data
+        if (!data.actual || !data.predicted || !data.timestamps) {
+            console.error("Invalid forecast data format:", data);
+            throw new Error("Invalid forecast data format");
+        }
+        
+        // Hide loading state
+        document.getElementById("forecast-loading").style.display = "none";
+        
+        // Update chart
+        updateForecastChart(data);
+        
+        // Update metrics
+        updateMetrics(data);
+        
+        // Store the results for this model
+        modelResults[data.model_type] = data;
+        
+        // Display input summary if available
+        if (data.input_summary) {
+            const metricsContainer = document.getElementById("forecast-metrics");
+            const summaryBadge = document.createElement("div");
+            summaryBadge.className = "metric-badge";
+            summaryBadge.style.backgroundColor = "#e2f0ff";
+            summaryBadge.textContent = data.input_summary;
+            metricsContainer.appendChild(summaryBadge);
+        }
+    })
+    .catch(function(error) {
+        console.error("Error fetching forecast data:", error);
+        
+        // Hide loading state and show empty state with error
+        document.getElementById("forecast-loading").style.display = "none";
+        document.getElementById("forecast-empty").style.display = "flex";
+        document.getElementById("forecast-empty").innerHTML = `
+            <p>Error: ${error.message || "Failed to fetch forecast data"}</p>
+        `;
+    });
+}
+
+// Add a function to switch to the forecast tab and ensure data is loaded
+function switchToForecastTab() {
+    // Find the forecast tab button and click it
+    const forecastTabBtn = document.querySelector('.tab-btn[data-tab="forecast"]');
+    if (forecastTabBtn) {
+        forecastTabBtn.click();
+    }
+    
+    // If we have a city selected but no forecast data, fetch it
+    if (formData.city && !forecastChart) {
+        fetchForecastData();
+    }
+}
+
+// Add this to the setupEventListeners function
+// Find the setupEventListeners function and add this at the end:
+document.querySelector('.tab-btn[data-tab="forecast"]').addEventListener('click', function() {
+    if (formData.city && !forecastChart) {
+        fetchForecastData();
+    }
+});
+
+    // Update cluster chart
+    function updateClusterChart(data) {
+        // Prepare datasets
+        const datasets = [];
+        const colors = [
+            "rgba(0, 99, 220, 0.8)",      // Darker blue
+            "rgba(220, 20, 60, 0.8)",     // Crimson
+            "rgba(0, 128, 0, 0.8)",       // Dark green
+            "rgba(184, 134, 11, 0.8)",    // Dark goldenrod
+            "rgba(128, 0, 128, 0.8)",     // Purple
+            "rgba(210, 105, 30, 0.8)",    // Chocolate
+            "rgba(47, 79, 79, 0.8)",      // Dark slate gray
+            "rgba(178, 34, 34, 0.8)",     // Firebrick
+            "rgba(0, 139, 139, 0.8)",     // Dark cyan
+            "rgba(85, 107, 47, 0.8)",     // Dark olive green
+        ];
+        
+        // Group data by cluster
+        const clusterGroups = {};
+        for (let i = 0; i < data.labels.length; i++) {
+            const cluster = data.labels[i];
+            if (!clusterGroups[cluster]) {
+                clusterGroups[cluster] = [];
+            }
+            clusterGroups[cluster].push({
+                x: data.pca_data[i][0],
+                y: data.pca_data[i][1],
+            });
+        }
+        
+        // Create datasets for each cluster
+        Object.keys(clusterGroups).forEach(function(cluster, index) {
+            datasets.push({
+                label: `Cluster ${parseInt(cluster) + 1}`,
+                data: clusterGroups[cluster],
+                backgroundColor: colors[index % colors.length],
+                pointRadius: 5,
+                pointHoverRadius: 7,
+            });
+        });
+        
+        // Destroy previous chart if it exists
+        if (clusterChart) {
+            clusterChart.destroy();
+        }
+        
+        // Create new chart
+        const ctx = document.getElementById("cluster-chart").getContext("2d");
+        clusterChart = new Chart(ctx, {
+            type: "scatter",
+            data: {
+                datasets: datasets,
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: "PCA Component 1",
+                        },
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: "PCA Component 2",
+                        },
+                    },
+                },
+                plugins: {
+                    title: {
+                        display: true,
+                        text: `K-Means Clustering for ${data.city.toUpperCase()} (k=${formData.k}, Silhouette Score: ${data.silhouette_score.toFixed(3)})`,
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `${context.dataset.label}: (${context.parsed.x.toFixed(2)}, ${context.parsed.y.toFixed(2)})`;
+                            },
+                        },
+                    },
+                },
+            },
+        });
+    }
+    
+    // Update overall cluster chart
+    function updateOverallClusterChart(data) {
+        // Prepare datasets
+        const datasets = [];
+        const colors = [
+            "rgba(0, 99, 220, 0.8)",      // Darker blue
+            "rgba(220, 20, 60, 0.8)",     // Crimson
+            "rgba(0, 128, 0, 0.8)",       // Dark green
+            "rgba(184, 134, 11, 0.8)",    // Dark goldenrod
+            "rgba(128, 0, 128, 0.8)",     // Purple
+            "rgba(210, 105, 30, 0.8)",    // Chocolate
+            "rgba(47, 79, 79, 0.8)",      // Dark slate gray
+            "rgba(178, 34, 34, 0.8)",     // Firebrick
+            "rgba(0, 139, 139, 0.8)",     // Dark cyan
+            "rgba(85, 107, 47, 0.8)",     // Dark olive green
+        ];
+        
+        // Group data by cluster
+        const clusterGroups = {};
+        for (let i = 0; i < data.cluster_labels.length; i++) {
+            const cluster = data.cluster_labels[i];
+            if (!clusterGroups[cluster]) {
+                clusterGroups[cluster] = [];
+            }
+            clusterGroups[cluster].push({
+                x: data.pca_data[i][0],
+                y: data.pca_data[i][1],
+                city: data.city_labels[i]
+            });
+        }
+        
+        // Create datasets for each cluster
+        Object.keys(clusterGroups).forEach(function(cluster, index) {
+            datasets.push({
+                label: `Cluster ${parseInt(cluster) + 1}`,
+                data: clusterGroups[cluster],
+                backgroundColor: colors[index % colors.length],
+                pointRadius: 3,
+                pointHoverRadius: 5,
+            });
+        });
+        
+        // Destroy previous chart if it exists
+        if (overallClusterChart) {
+            overallClusterChart.destroy();
+        }
+        
+        // Create new chart
+        const ctx = document.getElementById("overall-cluster-chart").getContext("2d");
+        overallClusterChart = new Chart(ctx, {
+            type: "scatter",
+            data: {
+                datasets: datasets,
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: "PCA Component 1",
+                        },
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: "PCA Component 2",
+                        },
+                    },
+                },
+                plugins: {
+                    title: {
+                        display: true,
+                        text: `Overall K-Means Clustering Across All Cities (k=${formData.k}, Silhouette Score: ${data.silhouette_score.toFixed(3)})`,
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const point = context.raw;
+                                return `${context.dataset.label} - ${point.city.toUpperCase()}: (${context.parsed.x.toFixed(2)}, ${context.parsed.y.toFixed(2)})`;
+                            },
+                        },
+                    },
+                    legend: {
+                        position: 'top',
+                    }
+                },
+            },
+        });
+    }
+    
+    // Update model comparison chart
+    function updateModelComparisonChart(results) {
+        // Prepare data
+        const models = ["rf", "xgb", "arima", "sarima"];
+        const modelNames = models.map(m => modelInfo[m].name);
+        const mseValues = models.map(m => modelResults[m] ? modelResults[m].mse : 0);
+        const maeValues = models.map(m => modelResults[m] ? modelResults[m].mae : 0);
+        const r2Values = models.map(m => modelResults[m] ? modelResults[m].r2 : 0);
+        
+        // Destroy previous chart if it exists
+        if (modelComparisonChart) {
+            modelComparisonChart.destroy();
+        }
+        
+        // Create new chart
+        const ctx = document.getElementById("model-comparison-chart").getContext("2d");
+        modelComparisonChart = new Chart(ctx, {
+            type: "bar",
+            data: {
+                labels: modelNames,
+                datasets: [
+                    {
+                        label: "Mean Squared Error (MSE)",
+                        data: mseValues,
+                        backgroundColor: "rgba(54, 162, 235, 0.7)",
+                        borderColor: "rgba(54, 162, 235, 1)",
+                        borderWidth: 1,
+                        yAxisID: 'y'
+                    },
+                    {
+                        label: "Mean Absolute Error (MAE)",
+                        data: maeValues,
+                        backgroundColor: "rgba(255, 99, 132, 0.7)",
+                        borderColor: "rgba(255, 99, 132, 1)",
+                        borderWidth: 1,
+                        yAxisID: 'y'
+                    },
+                    {
+                        label: "R² Score",
+                        data: r2Values,
+                        backgroundColor: "rgba(75, 192, 192, 0.7)",
+                        borderColor: "rgba(75, 192, 192, 1)",
+                        borderWidth: 1,
+                        yAxisID: 'y1'
+                    }
+                ],
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: "Forecasting Model",
+                        },
+                    },
+                    y: {
+                        type: 'linear',
+                        position: 'left',
+                        title: {
+                            display: true,
+                            text: "Error Metrics (MSE, MAE)",
+                        },
+                        beginAtZero: true
+                    },
+                    y1: {
+                        type: 'linear',
+                        position: 'right',
+                        title: {
+                            display: true,
+                            text: "R² Score",
+                        },
+                        min: 0,
+                        max: 1,
+                        grid: {
+                            drawOnChartArea: false
+                        }
+                    }
+                },
+                plugins: {
+                    title: {
+                        display: true,
+                        text: `Model Performance Comparison for ${formData.city.toUpperCase()}`,
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.parsed.y !== null) {
+                                    label += context.parsed.y.toFixed(4);
+                                }
+                                return label;
+                            }
+                        }
+                    }
+                },
+            },
+        });
+    }
+
+    // Update metrics display
+    function updateMetrics(data) {
+        const metricsContainer = document.getElementById("forecast-metrics");
+        metricsContainer.innerHTML = "";
+        
+        // Create metric badges
+        const metrics = [
+            { name: "MSE", value: data.mse.toFixed(4) },
+            { name: "MAE", value: data.mae.toFixed(4) },
+            { name: "R²", value: data.r2.toFixed(4) },
+        ];
+        
+        metrics.forEach(function(metric) {
+            const badge = document.createElement("div");
+            badge.className = "metric-badge";
+            badge.textContent = `${metric.name}: ${metric.value}`;
+            metricsContainer.appendChild(badge);
+        });
+        
+        // Add lookback badge
+        const lookbackBadge = document.createElement("div");
+        lookbackBadge.className = "metric-badge";
+        lookbackBadge.style.backgroundColor = "#fff7e6";
+        lookbackBadge.textContent = `Lookback: ${data.lookback} hours`;
+        metricsContainer.appendChild(lookbackBadge);
+        
+        // Add city badge
+        const cityBadge = document.createElement("div");
+        cityBadge.className = "metric-badge";
+        cityBadge.style.backgroundColor = "#f6f6f6";
+        cityBadge.textContent = `City: ${data.city.charAt(0).toUpperCase() + data.city.slice(1)}`;
+        metricsContainer.appendChild(cityBadge);
+    }
+    
+
+    // Helper function to get model name
+    function getModelName(modelCode) {
+        const models = {
+            rf: "Random Forest",
+            xgb: "XGBoost",
+            arima: "ARIMA",
+            sarima: "SARIMA",
+        };
+        return models[modelCode] || modelCode;
+    }
+</script>
+</body>
+</html>
