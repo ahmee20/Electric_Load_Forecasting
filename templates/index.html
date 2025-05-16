@@ -3,408 +3,798 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Energy Demand Forecasting</title>
+    <title>Electric Load Forecasting</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/plotly.js-dist"></script>
     <style>
         :root {
-            --primary-color: #3498db;
-            --secondary-color: #2ecc71;
-            --accent-color: #e74c3c;
-            --text-color: #333;
-            --light-text: #666;
-            --background-color: #f5f7fa;
-            --card-background: #fff;
-            --border-color: #ddd;
-            --shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+          --primary-color: #6d28d9;
+          --primary-light: #8b5cf6;
+          --primary-dark: #5b21b6;
+          --secondary-color: #10b981;
+          --secondary-light: #34d399;
+          --secondary-dark: #059669;
+          --accent-color: #f59e0b;
+          --accent-light: #fbbf24;
+          --accent-dark: #d97706;
+          --background-color: #111827;
+          --card-bg: #1f2937;
+          --text-color: #f3f4f6;
+          --text-muted: #9ca3af;
+          --border-color: #374151;
+          --success-color: #10b981;
+          --error-color: #ef4444;
+          --warning-color: #f59e0b;
+          --info-color: #3b82f6;
         }
         
         body {
-            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
-            color: var(--text-color);
-            background-color: var(--background-color);
+          font-family: "Poppins", sans-serif;
+          background-color: var(--background-color);
+          color: var(--text-color);
+          margin: 0;
+          padding: 0;
+          min-height: 100vh;
+          overflow-x: hidden;
+        }
+        
+        /* Animated background */
+        .animated-background {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          z-index: -1;
+          overflow: hidden;
+        }
+        
+        .animated-background::before {
+          content: "";
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: radial-gradient(circle at 50% 50%, rgba(109, 40, 217, 0.15), transparent 60%);
+          animation: pulse 15s infinite alternate;
+        }
+        
+        .animated-background::after {
+          content: "";
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: radial-gradient(circle at 80% 20%, rgba(16, 185, 129, 0.1), transparent 50%);
+          animation: pulse 20s infinite alternate-reverse;
+        }
+        
+        @keyframes pulse {
+          0% {
+            transform: scale(1);
+            opacity: 0.5;
+          }
+          50% {
+            transform: scale(1.5);
+            opacity: 0.8;
+          }
+          100% {
+            transform: scale(1);
+            opacity: 0.5;
+          }
+        }
+        
+        .particles {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+        }
+        
+        .particle {
+          position: absolute;
+          background: rgba(255, 255, 255, 0.1);
+          border-radius: 50%;
+          pointer-events: none;
         }
         
         .container {
-            width: 100%;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 15px;
+          max-width: 1200px;
+          margin: 0 auto;
+          padding: 2rem 1rem;
+          position: relative;
+          z-index: 1;
         }
         
-        header {
-            background-color: var(--card-background);
-            box-shadow: var(--shadow);
-            padding: 15px 0;
-            margin-bottom: 20px;
+        .app-header {
+          background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+          color: white;
+          padding: 2.5rem;
+          border-radius: 1rem;
+          margin-bottom: 2rem;
+          box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+          position: relative;
+          overflow: hidden;
+          transition: all 0.3s ease;
         }
         
-        header .container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        .app-header::before {
+          content: "";
+          position: absolute;
+          top: -50%;
+          left: -50%;
+          width: 200%;
+          height: 200%;
+          background: radial-gradient(circle at center, rgba(255, 255, 255, 0.1) 0%, transparent 60%);
+          transform: rotate(30deg);
+          animation: shimmer 10s infinite linear;
         }
         
-        .logo {
-            display: flex;
-            align-items: center;
+        @keyframes shimmer {
+          0% {
+            transform: rotate(0deg);
+          }
+          100% {
+            transform: rotate(360deg);
+          }
         }
         
-        .logo .icon {
-            font-size: 24px;
-            margin-right: 10px;
+        .app-title {
+          font-weight: 800;
+          margin: 0;
+          font-size: 3rem;
+          text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+          background: linear-gradient(to right, #fff, #d8b4fe);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          position: relative;
+          z-index: 1;
         }
         
-        .logo h1 {
-            font-size: 20px;
-            font-weight: 600;
+        .app-subtitle {
+          opacity: 0.9;
+          margin-top: 0.5rem;
+          font-size: 1.2rem;
+          position: relative;
+          z-index: 1;
         }
         
-        nav ul {
-            display: flex;
-            list-style: none;
+        .nav-tabs {
+          display: flex;
+          border-bottom: 1px solid var(--border-color);
+          margin-bottom: 0;
+          background-color: var(--card-bg);
+          border-radius: 0.75rem 0.75rem 0 0;
+          overflow: hidden;
         }
         
-        nav ul li {
-            margin-left: 20px;
+        .nav-tabs .nav-link {
+          border: none;
+          color: var(--text-muted);
+          font-weight: 600;
+          padding: 1rem 1.5rem;
+          transition: all 0.3s ease;
+          position: relative;
+          background: transparent;
+          cursor: pointer;
         }
         
-        nav ul li a {
-            text-decoration: none;
-            color: var(--text-color);
-            font-weight: 500;
-            transition: all 0.3s ease;
+        .nav-tabs .nav-link:hover {
+          color: var(--text-color);
         }
         
-        nav ul li a:hover,
-        nav ul li a.active {
-            color: var(--primary-color);
+        .nav-tabs .nav-link.active {
+          color: var(--primary-light);
+          background-color: transparent;
+        }
+        
+        .nav-tabs .nav-link.active::after {
+          content: "";
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          width: 100%;
+          height: 3px;
+          background: linear-gradient(to right, var(--primary-color), var(--primary-light));
+          border-radius: 3px 3px 0 0;
+        }
+        
+        .tab-content {
+          padding: 1.5rem;
+          border: 1px solid var(--border-color);
+          border-top: none;
+          border-radius: 0 0 0.75rem 0.75rem;
+          background-color: var(--card-bg);
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
         
         .card {
-            background-color: var(--card-background);
-            border-radius: 5px;
-            box-shadow: var(--shadow);
-            padding: 20px;
-            margin-bottom: 20px;
+          background-color: var(--card-bg);
+          border: 1px solid var(--border-color);
+          border-radius: 0.75rem;
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+          margin-bottom: 1.5rem;
+          overflow: hidden;
+          transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
         
-        .card h2 {
-            margin-bottom: 15px;
-            font-size: 18px;
-            font-weight: 600;
+        .card:hover {
+          transform: translateY(-5px);
+          box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2);
         }
         
-        .card p {
-            color: var(--text-color);
-            margin-bottom: 15px;
-            font-size: 14px;
+        .card-header {
+          background-color: rgba(0, 0, 0, 0.2);
+          border-bottom: 1px solid var(--border-color);
+          font-weight: 700;
+          padding: 1rem 1.5rem;
+          color: var(--text-color);
         }
         
-        .dashboard {
-            display: grid;
-            grid-template-columns: 300px 1fr;
-            gap: 20px;
+        .card-body {
+          padding: 1.5rem;
         }
         
-        @media (max-width: 768px) {
-            .dashboard {
-                grid-template-columns: 1fr;
-            }
+        .form-label {
+          font-weight: 600;
+          margin-bottom: 0.5rem;
+          color: var(--text-color);
         }
         
-        .form-group {
-            margin-bottom: 15px;
+        .form-control,
+        .form-select {
+          background-color: var(--background-color);
+          border: 1px solid var(--border-color);
+          border-radius: 0.5rem;
+          color: var(--text-color);
+          padding: 0.75rem 1rem;
+          transition: all 0.3s ease;
         }
         
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: 500;
+        .form-control:focus,
+        .form-select:focus {
+          border-color: var(--primary-light);
+          box-shadow: 0 0 0 0.25rem rgba(139, 92, 246, 0.25);
+          background-color: rgba(0, 0, 0, 0.2);
         }
         
-        input,
-        select {
-            width: 100%;
-            padding: 8px 12px;
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-            font-size: 14px;
+        .form-range {
+          height: 1.5rem;
+          padding: 0;
         }
         
-        input[type="range"] {
-            padding: 0;
+        .form-range::-webkit-slider-thumb {
+          background: var(--primary-color);
         }
         
-        button {
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: 500;
-            transition: all 0.3s ease;
-        }
-        
-        button:hover {
-            background-color: #2980b9;
+        .form-range::-moz-range-thumb {
+          background: var(--primary-color);
         }
         
         .help-text {
-            font-size: 12px;
-            color: var(--light-text);
-            margin-top: 5px;
+          margin-top: 0.5rem;
+          font-size: 0.875rem;
+          color: var(--text-muted);
         }
         
-        .radio-group {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
+        .btn {
+          font-weight: 600;
+          padding: 0.75rem 1.5rem;
+          border-radius: 0.5rem;
+          transition: all 0.3s ease;
         }
         
-        .radio-group label {
-            display: flex;
-            align-items: center;
-            font-weight: normal;
-            cursor: pointer;
+        .btn-primary {
+          background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+          border: none;
+          color: white;
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
         
-        .radio-group input[type="radio"] {
-            width: auto;
-            margin-right: 8px;
+        .btn-primary:hover {
+          background: linear-gradient(135deg, var(--primary-light), var(--primary-color));
+          transform: translateY(-2px);
+          box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
         }
         
-        .tabs {
-            width: 100%;
+        .btn-primary:active {
+          transform: translateY(0);
         }
         
-        .tab-header {
-            display: flex;
-            border-bottom: 1px solid var(--border-color);
-            margin-bottom: 15px;
-            flex-wrap: wrap;
+        .btn-group .btn {
+          border-radius: 0;
+          background-color: rgba(0, 0, 0, 0.2);
+          border: 1px solid var(--border-color);
+          color: var(--text-muted);
         }
         
-        .tab-btn {
-            background: none;
-            color: var(--text-color);
-            border: none;
-            padding: 10px 15px;
-            margin-right: 5px;
-            cursor: pointer;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            border-bottom: 2px solid transparent;
+        .btn-group .btn:first-child {
+          border-top-left-radius: 0.5rem;
+          border-bottom-left-radius: 0.5rem;
         }
         
-        .tab-btn.active {
-            color: var(--primary-color);
-            border-bottom: 2px solid var(--primary-color);
+        .btn-group .btn:last-child {
+          border-top-right-radius: 0.5rem;
+          border-bottom-right-radius: 0.5rem;
         }
         
-        .tab-pane {
-            display: none;
-        }
-        
-        .tab-pane.active {
-            display: block;
-        }
-        
-        .chart-container {
-            position: relative;
-            height: 400px;
-            margin-top: 20px;
+        .btn-group .btn.active {
+          background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+          border-color: var(--primary-color);
+          color: white;
         }
         
         .loading {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(255, 255, 255, 0.8);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 10;
+          display: none;
+          text-align: center;
+          margin: 2rem 0;
         }
         
-        .spinner {
-            border: 4px solid rgba(0, 0, 0, 0.1);
-            border-radius: 50%;
-            border-top: 4px solid var(--primary-color);
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin-bottom: 10px;
+        .spinner-border {
+          width: 3rem;
+          height: 3rem;
+          border-width: 0.25rem;
+          color: var(--primary-light);
         }
         
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        .chart-container {
+          width: 100%;
+          height: 450px;
+          margin-top: 1.5rem;
+          border-radius: 0.75rem;
+          overflow: hidden;
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+          background-color: rgba(0, 0, 0, 0.2);
+          border: 1px solid var(--border-color);
         }
         
-        .empty-state {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background-color: rgba(245, 247, 250, 0.5);
-            z-index: 5;
+        .time-selector {
+          display: flex;
+          justify-content: center;
+          margin: 1rem 0;
+          overflow-x: auto;
+          padding-bottom: 0.5rem;
         }
         
-        .empty-state p {
-            text-align: center;
-            color: var(--light-text);
+        .time-selector .time-btn {
+          padding: 0.5rem 1rem;
+          margin: 0 0.25rem;
+          border: 1px solid var(--border-color);
+          border-radius: 0.5rem;
+          background-color: rgba(0, 0, 0, 0.2);
+          color: var(--text-muted);
+          cursor: pointer;
+          transition: all 0.3s ease;
+          font-size: 0.875rem;
+          font-weight: 500;
         }
         
-        .metrics {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            margin-bottom: 10px;
+        .time-selector .time-btn:hover {
+          background-color: rgba(0, 0, 0, 0.3);
+          color: var(--text-color);
         }
         
-        .metric-badge {
-            background-color: #f1f5f9;
-            padding: 5px 10px;
-            border-radius: 4px;
-            font-size: 13px;
-            font-weight: 500;
+        .time-selector .time-btn.active {
+          background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+          border-color: var(--primary-color);
+          color: white;
         }
         
-        .model-info {
-            margin-top: 15px;
-            padding: 10px;
-            background-color: #f8f9fa;
-            border-radius: 4px;
-            border-left: 4px solid var(--primary-color);
+        .point-info {
+          margin-top: 1.5rem;
+          padding: 1.5rem;
+          background-color: rgba(59, 130, 246, 0.1);
+          border: 1px solid rgba(59, 130, 246, 0.2);
+          border-radius: 0.75rem;
+          display: none;
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
         
-        .model-info h3 {
-            font-size: 16px;
-            margin-bottom: 5px;
+        .point-info h5 {
+          margin-top: 0;
+          color: var(--info-color);
+          font-weight: 700;
+          margin-bottom: 1rem;
         }
         
-        .model-info p {
-            font-size: 14px;
-            color: var(--light-text);
+        .metrics-container {
+          margin-top: 1.5rem;
+          padding: 1.5rem;
+          background-color: rgba(16, 185, 129, 0.1);
+          border: 1px solid rgba(16, 185, 129, 0.2);
+          border-radius: 0.75rem;
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
         
-        .model-rf { border-left-color: #4285F4; }
-        .model-xgb { border-left-color: #EA4335; }
-        .model-arima { border-left-color: #FBBC05; }
-        .model-sarima { border-left-color: #34A853; }
-        
-        footer {
-            background-color: var(--card-background);
-            padding: 20px 0;
-            margin-top: 40px;
-            text-align: center;
-            color: var(--light-text);
-            font-size: 14px;
+        .metrics-container h4 {
+          color: var(--secondary-color);
+          font-weight: 700;
+          margin-top: 0;
+          margin-bottom: 1rem;
         }
+        
+        .metrics-table {
+          width: 100%;
+          margin-bottom: 0;
+        }
+        
+        .metrics-table td {
+          padding: 0.75rem 1rem;
+          border-bottom: 1px solid rgba(16, 185, 129, 0.1);
+        }
+        
+        .metrics-table td:first-child {
+          font-weight: 600;
+          width: 60%;
+        }
+        
+        .summary-card {
+          background-color: rgba(245, 158, 11, 0.1);
+          border: 1px solid rgba(245, 158, 11, 0.2);
+          border-radius: 0.75rem;
+          padding: 1.5rem;
+          margin-top: 1.5rem;
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .summary-card h4 {
+          margin-top: 0;
+          color: var(--accent-color);
+          font-weight: 700;
+          margin-bottom: 1rem;
+        }
+        
+        .summary-stats {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 1rem;
+          margin-top: 1rem;
+        }
+        
+        .stat-item {
+          flex: 1;
+          min-width: 150px;
+          background-color: rgba(0, 0, 0, 0.2);
+          padding: 1.25rem;
+          border-radius: 0.75rem;
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+          border: 1px solid var(--border-color);
+          transition: transform 0.3s ease;
+        }
+        
+        .stat-item:hover {
+          transform: translateY(-5px);
+        }
+        
+        .stat-label {
+          font-size: 0.875rem;
+          color: var(--text-muted);
+          margin-bottom: 0.5rem;
+        }
+        
+        .stat-value {
+          font-size: 1.5rem;
+          font-weight: 700;
+          color: var(--accent-color);
+          text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .table {
+          color: var(--text-color);
+          background-color: transparent;
+        }
+        
+        .table th {
+          font-weight: 600;
+          color: var(--text-color);
+          border-bottom: 2px solid var(--border-color);
+          padding: 0.75rem 1rem;
+        }
+        
+        .table td {
+          padding: 0.75rem 1rem;
+          border-bottom: 1px solid var(--border-color);
+        }
+        
+        .table-striped tbody tr:nth-of-type(odd) {
+          background-color: rgba(0, 0, 0, 0.1);
+        }
+        
+        .table-hover tbody tr:hover {
+          background-color: rgba(0, 0, 0, 0.2);
+        }
+        
+        .accordion-item {
+          background-color: var(--card-bg);
+          border: 1px solid var(--border-color);
+          margin-bottom: 0.5rem;
+          border-radius: 0.5rem;
+          overflow: hidden;
+        }
+        
+        .accordion-header {
+          margin: 0;
+        }
+        
+        .accordion-button {
+          background-color: rgba(0, 0, 0, 0.2);
+          color: var(--text-color);
+          font-weight: 600;
+          padding: 1rem 1.5rem;
+          width: 100%;
+          text-align: left;
+          border: none;
+          transition: all 0.3s ease;
+        }
+        
+        .accordion-button:not(.collapsed) {
+          background-color: rgba(109, 40, 217, 0.1);
+          color: var(--primary-light);
+        }
+        
+        .accordion-button:focus {
+          box-shadow: none;
+          border-color: var(--primary-color);
+        }
+        
+        .accordion-button::after {
+          background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23f3f4f6'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e");
+        }
+        
+        .accordion-body {
+          padding: 1.5rem;
+          background-color: rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Tooltip */
+        #tooltip {
+          position: absolute;
+          display: none;
+          background: rgba(0, 0, 0, 0.8);
+          color: white;
+          padding: 0.75rem 1rem;
+          border-radius: 0.5rem;
+          font-size: 0.875rem;
+          pointer-events: none;
+          z-index: 1000;
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+          max-width: 300px;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+          .app-header {
+            padding: 1.5rem;
+          }
+        
+          .app-title {
+            font-size: 2rem;
+          }
+        
+          .chart-container {
+            height: 350px;
+          }
+        
+          .stat-item {
+            min-width: 120px;
+          }
+        
+          .nav-tabs .nav-link {
+            padding: 0.75rem 1rem;
+            font-size: 0.875rem;
+          }
+        }
+        
+        /* Animations */
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        
+        .fade-in {
+          animation: fadeIn 0.5s ease forwards;
+        }
+        
+        /* Glowing effect for buttons */
+        .btn-glow {
+          position: relative;
+          overflow: hidden;
+        }
+        
+        .btn-glow::after {
+          content: "";
+          position: absolute;
+          top: -50%;
+          left: -50%;
+          width: 200%;
+          height: 200%;
+          background: radial-gradient(circle at center, rgba(255, 255, 255, 0.2) 0%, transparent 60%);
+          transform: rotate(30deg);
+          animation: shimmer 10s infinite linear;
+          pointer-events: none;
+        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+          width: 10px;
+          height: 10px;
+        }
+        
+        ::-webkit-scrollbar-track {
+          background: var(--background-color);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+          background: var(--primary-dark);
+          border-radius: 5px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+          background: var(--primary-color);
+        }
+
+        #help .card-body,
+#help .accordion-body {
+    color: #ffffff !important;
+}
+
     </style>
 </head>
 <body>
-<header>
-    <div class="container">
-        <div class="logo">
-            <span class="icon">⚡</span>
-            <h1>Energy Demand Forecast</h1>
-        </div>
-        <nav>
-            <ul>
-                <li><a href="/" class="active">Dashboard</a></li>
-                <li><a href="/documentation">Documentation</a></li>
-            </ul>
-        </nav>
+    <!-- Animated Background -->
+    <div class="animated-background">
+        <canvas id="particles-canvas" class="particles"></canvas>
     </div>
-</header>
-
-<main>
+    
     <div class="container">
-        <div class="dashboard">
-            <div class="panel">
-                <div class="card">
-                    <h2>Input Parameters</h2>
-                    <form id="input-form">
-                        <div class="form-group">
-                            <label for="city">City</label>
-                            <select id="city" name="city" required>
-                                <option value="">Select a city</option>
-                                {% for city in cities %}
-                                <option value="{{ city }}">{{ city|title }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="start-date">Start Date</label>
-                            <input type="date" id="start-date" name="start-date" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="end-date">End Date</label>
-                            <input type="date" id="end-date" name="end-date" required>
-                        </div>
-                        <button type="submit" id="analyze-btn">Analyze Data</button>
-                    </form>
-                </div>
-
-                <div class="card">
-                    <h2>Model Controls</h2>
-                    <div class="tabs">
-                        <div class="tab-header">
-                            <button class="tab-btn active" data-tab="clustering">Clustering</button>
-                            <button class="tab-btn" data-tab="forecasting">Forecasting</button>
-                        </div>
-                        <div class="tab-content">
-                            <div class="tab-pane active" id="clustering-tab">
-                                <div class="form-group">
-                                    <label for="k-slider">Number of Clusters (k): <span id="k-value">3</span></label>
-                                    <input type="range" id="k-slider" min="2" max="10" value="3" step="1">
-                                    <p class="help-text">Adjust the number of clusters for K-means algorithm</p>
-                                </div>
-                                <div class="form-group">
-                                    <button id="overall-cluster-btn" class="secondary-btn">View Overall Clustering</button>
-                                    <p class="help-text">See clustering across all cities</p>
-                                </div>
+        <div class="app-header text-center">
+            <h1 class="app-title">Electric Load Forecasting</h1>
+            <p class="app-subtitle">Predict and analyze energy demand patterns with advanced machine learning models</p>
+        </div>
+        
+        <ul class="nav nav-tabs" id="myTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="forecast-tab" data-bs-toggle="tab" data-bs-target="#forecast" type="button" role="tab" aria-controls="forecast" aria-selected="true">
+                    <i class="fas fa-chart-line"></i> Forecasting
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="cluster-tab" data-bs-toggle="tab" data-bs-target="#cluster" type="button" role="tab" aria-controls="cluster" aria-selected="false">
+                    <i class="fas fa-object-group"></i> Clustering
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="help-tab" data-bs-toggle="tab" data-bs-target="#help" type="button" role="tab" aria-controls="help" aria-selected="false">
+                    <i class="fas fa-question-circle"></i> Help & Documentation
+                </button>
+            </li>
+        </ul>
+        
+        <div class="tab-content" id="myTabContent">
+            <!-- Forecasting Tab -->
+            <div class="tab-pane fade show active" id="forecast" role="tabpanel" aria-labelledby="forecast-tab">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-header">Forecast Settings</div>
+                            <div class="card-body">
+                                <form id="forecast-form">
+                                    <div class="mb-3">
+                                        <label for="city" class="form-label">City</label>
+                                        <select class="form-select" id="city" name="city" required>
+                                            <option value="" selected disabled>Select a city</option>
+                                            {% for city in cities %}
+                                            <option value="{{ city }}">{{ city|capitalize }}</option>
+                                            {% endfor %}
+                                        </select>
+                                        <div class="help-text">Select the city for which you want to forecast electric load.</div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="start_date" class="form-label">Start Date</label>
+                                        <input type="text" class="form-control date-picker" id="start_date" name="start_date" required>
+                                        <div class="help-text">Select the start date for your forecast period.</div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="end_date" class="form-label">End Date</label>
+                                        <input type="text" class="form-control date-picker" id="end_date" name="end_date" required>
+                                        <div class="help-text">Select the end date for your forecast period (max 30 days from start).</div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="forecast_interval" class="form-label">Forecast Interval</label>
+                                        <select class="form-select" id="forecast_interval" name="forecast_interval">
+                                            <option value="hourly" selected>Hourly</option>
+                                            <option value="two_hourly">Every 2 Hours</option>
+                                            <option value="daily">Daily</option>
+                                        </select>
+                                        <div class="help-text">Choose the time interval for your forecast.</div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="model_type" class="form-label">Model Type</label>
+                                        <select class="form-select" id="model_type" name="model_type">
+                                            <option value="arima" selected>ARIMA</option>
+                                            <option value="linear_reg">Linear Regression</option>
+                                            <option value="random_forest">Random Forest</option>
+                                            <option value="xgboost">XGBoost</option>
+                                            <option value="lstm">LSTM</option>
+                                        </select>
+                                        <div class="help-text">Select the forecasting model to use. Different models may perform better for different cities and time periods.</div>
+                                    </div>
+                                    
+                                    <button type="submit" class="btn btn-primary w-100">
+                                        <i class="fas fa-chart-line"></i> Generate Forecast
+                                    </button>
+                                </form>
                             </div>
-                            <div class="tab-pane" id="forecasting-tab">
-                                <div class="form-group">
-                                    <label for="lookback-slider">Look-back Window: <span id="lookback-value">24</span> hours</label>
-                                    <input type="range" id="lookback-slider" min="1" max="72" value="24" step="1">
-                                    <p class="help-text">Number of previous hours to consider for forecasting</p>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-8">
+                        <div id="forecast-loading" class="loading">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p>Generating forecast...</p>
+                        </div>
+                        
+                        <div id="forecast-result" class="result-container" style="display: none;">
+                            <div class="card">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <h3 class="m-0">Forecast Results</h3>
+                                    <div class="forecast-options">
+                                        <div class="btn-group" role="group" aria-label="View options">
+                                            <button type="button" class="btn active" id="view-all">All</button>
+                                            <button type="button" class="btn" id="view-predicted">Predicted</button>
+                                            <button type="button" class="btn" id="view-actual">Actual</button>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="form-group">
-                                    <label>Forecasting Model</label>
-                                    <div class="radio-group">
-                                        <label>
-                                            <input type="radio" name="model" value="rf" checked>
-                                            Random Forest
-                                        </label>
-                                        <label>
-                                            <input type="radio" name="model" value="xgb">
-                                            XGBoost
-                                        </label>
-                                        <label>
-                                            <input type="radio" name="model" value="arima">
-                                            ARIMA
-                                        </label>
-                                        <label>
-                                            <input type="radio" name="model" value="sarima">
-                                            SARIMA
-                                        </label>
+                                <div class="card-body">
+                                    <div id="time-selector" class="time-selector" style="display: none;"></div>
+                                    <div id="forecast-plot" class="chart-container"></div>
+                                    
+                                    <div id="point-info" class="point-info">
+                                        <h5>Point Details</h5>
+                                        <div id="point-details"></div>
+                                    </div>
+                                    
+                                    <div id="metrics-container" class="metrics-container" style="display: none;">
+                                        <h4>Model Performance Metrics</h4>
+                                        <table class="metrics-table">
+                                            <tr>
+                                                <td>Mean Absolute Error (MAE):</td>
+                                                <td id="mae-value">-</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Root Mean Square Error (RMSE):</td>
+                                                <td id="rmse-value">-</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Mean Absolute Percentage Error (MAPE):</td>
+                                                <td id="mape-value">-</td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                    
+                                    <div class="summary-card">
+                                        <h4>Forecast Summary</h4>
+                                        <div class="summary-stats" id="forecast-summary-stats"></div>
+                                        <p id="forecast-summary" class="mt-3"></p>
                                     </div>
                                 </div>
                             </div>
@@ -412,176 +802,164 @@
                     </div>
                 </div>
             </div>
-
-            <div class="main-content">
-                <div class="tabs">
-                    <div class="tab-header">
-                        <button class="tab-btn active" data-tab="visualization">City Clustering</button>
-                        <button class="tab-btn" data-tab="overall-clustering">Overall Clustering</button>
-                        <button class="tab-btn" data-tab="forecast">Forecast Plot</button>
-                        <button class="tab-btn" data-tab="model-comparison">Model Comparison</button>
-                        <button class="tab-btn" data-tab="help">Help & Documentation</button>
+            
+            <!-- Clustering Tab -->
+            <div class="tab-pane fade" id="cluster" role="tabpanel" aria-labelledby="cluster-tab">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-header">Clustering Settings</div>
+                            <div class="card-body">
+                                <form id="cluster-form">
+                                    <div class="mb-3">
+                                        <label for="k_value" class="form-label">Number of Clusters (k)</label>
+                                        <input type="range" class="form-range" id="k_value" name="k_value" min="2" max="10" value="3">
+                                        <div class="d-flex justify-content-between">
+                                            <span>2</span>
+                                            <span id="k_value_display">3</span>
+                                            <span>10</span>
+                                        </div>
+                                        <div class="help-text">Adjust the number of clusters to identify different patterns in the data.</div>
+                                    </div>
+                                    
+                                    <button type="submit" class="btn btn-primary w-100">
+                                        <i class="fas fa-object-group"></i> Generate Clusters
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
                     </div>
-                    <div class="tab-content">
-                        <div class="tab-pane active" id="visualization-tab">
+                    
+                    <div class="col-md-8">
+                        <div id="cluster-loading" class="loading">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p>Generating clusters...</p>
+                        </div>
+                        
+                        <div id="cluster-result" class="result-container" style="display: none;">
                             <div class="card">
-                                <h2>City Cluster Visualization</h2>
-                                <p>Interactive PCA plot colored by cluster for the selected city</p>
-                                <div class="chart-container">
-                                    <canvas id="cluster-chart"></canvas>
-                                    <div id="cluster-loading" class="loading" style="display: none;">
-                                        <div class="spinner"></div>
-                                        <p>Processing cluster analysis...</p>
-                                    </div>
-                                    <div id="cluster-empty" class="empty-state">
-                                        <p>Please select a city and date range to view cluster visualization.</p>
+                                <div class="card-header">
+                                    <h3 class="m-0">Clustering Results</h3>
+                                </div>
+                                <div class="card-body">
+                                    <div id="cluster-plot" class="chart-container"></div>
+                                    
+                                    <div class="cluster-stats mt-4">
+                                        <h4>Cluster Statistics</h4>
+                                        <div id="cluster-stats-container"></div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="tab-pane" id="overall-clustering-tab">
-                            <div class="card">
-                                <h2>Overall Clustering Visualization</h2>
-                                <p>Interactive PCA plot showing clusters across all cities</p>
-                                <div class="chart-container">
-                                    <canvas id="overall-cluster-chart"></canvas>
-                                    <div id="overall-cluster-loading" class="loading" style="display: none;">
-                                        <div class="spinner"></div>
-                                        <p>Processing overall cluster analysis...</p>
-                                    </div>
-                                    <div id="overall-cluster-empty" class="empty-state">
-                                        <p>Click "View Overall Clustering" to see clusters across all cities.</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="tab-pane" id="forecast-tab">
-                            <div class="card">
-                                <h2>Forecast Plot</h2>
-                                <p>Time-series chart of actual vs. predicted demand</p>
-                                <div class="metrics" id="forecast-metrics"></div>
-                                <div class="chart-container">
-                                    <canvas id="forecast-chart"></canvas>
-                                    <div id="forecast-loading" class="loading" style="display: none;">
-                                        <div class="spinner"></div>
-                                        <p>Processing forecast data...</p>
-                                    </div>
-                                    <div id="forecast-empty" class="empty-state">
-                                        <p>Please select a city and date range to view forecast results.</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="tab-pane" id="model-comparison-tab">
-                            <div class="card">
-                                <h2>Model Comparison</h2>
-                                <p>Compare performance of different forecasting models</p>
-                                <div class="chart-container">
-                                    <canvas id="model-comparison-chart"></canvas>
-                                    <div id="model-comparison-loading" class="loading" style="display: none;">
-                                        <div class="spinner"></div>
-                                        <p>Generating model comparison...</p>
-                                    </div>
-                                    <div id="model-comparison-empty" class="empty-state">
-                                        <p>Select a city and analyze data to compare models.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Help & Documentation Tab -->
+            <div class="tab-pane fade" id="help" role="tabpanel" aria-labelledby="help-tab">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="m-0">Help & Documentation</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="accordion" id="helpAccordion">
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="headingOne">
+                                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                                        Using the Forecasting Tool
+                                    </button>
+                                </h2>
+                                <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#helpAccordion">
+                                    <div class="accordion-body">
+                                        <p>The forecasting tool allows you to predict electric load for different cities over a specified time period.</p>
+                                        <ol>
+                                            <li><strong>Select a City:</strong> Choose the city for which you want to forecast electric load.</li>
+                                            <li><strong>Choose Date Range:</strong> Select the start and end dates for your forecast period. For best results, keep the forecast period under 30 days.</li>
+                                            <li><strong>Select Forecast Interval:</strong> Choose between hourly, every 2 hours, or daily forecasts.</li>
+                                            <li><strong>Select Model Type:</strong> Choose from different forecasting models:
+                                                <ul>
+                                                    <li><strong>ARIMA:</strong> Autoregressive Integrated Moving Average - good for short-term forecasts.</li>
+                                                    <li><strong>Linear Regression:</strong> Simple and interpretable model for linear relationships.</li>
+                                                    <li><strong>Random Forest:</strong> Ensemble learning method that can capture non-linear relationships.</li>
+                                                    <li><strong>XGBoost:</strong> Gradient boosting algorithm that often provides high accuracy.</li>
+                                                    <li><strong>LSTM:</strong> Long Short-Term Memory neural network - excellent for time series with long-term dependencies.</li>
+                                                </ul>
+                                            </li>
+                                            <li><strong>Generate Forecast:</strong> Click the button to generate the forecast.</li>
+                                        </ol>
+                                        <p>The forecast will be displayed as an interactive chart showing predicted load values over time. If actual data is available for the selected period, it will also be shown for comparison. Hover over any point to see the exact values, and click on a point to see detailed information.</p>
+                                        <p>Below the chart, you'll see performance metrics (if actual data is available) and a summary of the forecast.</p>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="tab-pane" id="help-tab">
-                            <div class="card">
-                                <h2>Help & Documentation</h2>
-                                <div class="tabs">
-                                    <div class="tab-header">
-                                        <button class="tab-btn active" data-tab="instructions">Instructions</button>
-                                        <button class="tab-btn" data-tab="approach">Approach</button>
-                                        <button class="tab-btn" data-tab="technical">Technical Details</button>
+                            
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="headingTwo">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                                        Using the Clustering Tool
+                                    </button>
+                                </h2>
+                                <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#helpAccordion">
+                                    <div class="accordion-body">
+                                        <p>The clustering tool helps identify patterns in the electric load data by grouping similar data points together.</p>
+                                        <ol>
+                                            <li><strong>Adjust Number of Clusters (k):</strong> Use the slider to set the number of clusters. More clusters will create more specific groupings, while fewer clusters will create broader categories.</li>
+                                            <li><strong>Generate Clusters:</strong> Click the button to perform the clustering analysis.</li>
+                                        </ol>
+                                        <p>The results will be displayed as an interactive scatter plot where each point represents a data point and colors indicate different clusters. The plot uses Principal Component Analysis (PCA) to reduce the dimensionality of the data for visualization. Hover over any point to see its feature values.</p>
+                                        <p>Below the plot, you'll see statistics for each cluster, including the average temperature, humidity, wind speed, and percentage of weekend days in each cluster.</p>
                                     </div>
-                                    <div class="tab-content">
-                                        <div class="tab-pane active" id="instructions-tab">
-                                            <h3>Using the Application</h3>
-                                            <p>Step-by-step guide to using the energy demand forecasting tool</p>
-                                            <h4>Input Form</h4>
-                                            <ul>
-                                                <li>Select a city from the dropdown menu</li>
-                                                <li>Choose a start date and end date for your analysis</li>
-                                                <li>Click "Analyze Data" to process your selection</li>
-                                            </ul>
-                                            <h4>Model Controls</h4>
-                                            <ul>
-                                                <li>Adjust the number of clusters (k) using the slider</li>
-                                                <li>Set the look-back window for time series forecasting</li>
-                                                <li>Choose between different forecasting models</li>
-                                            </ul>
-                                            <h4>Visualization Tabs</h4>
-                                            <ul>
-                                                <li>City Clustering: View PCA projection of data points colored by cluster for the selected city</li>
-                                                <li>Overall Clustering: View clusters across all cities</li>
-                                                <li>Forecast Plot: Compare actual vs. predicted energy demand</li>
-                                                <li>Model Comparison: Compare performance of different forecasting models</li>
-                                                <li>Help & Documentation: Access this help section</li>
-                                            </ul>
-                                        </div>
-                                        <div class="tab-pane" id="approach-tab">
-                                            <h3>Clustering Approach</h3>
-                                            <p>This application uses K-means clustering to group similar energy demand patterns based on weather and demand features. The clustering helps identify distinct usage patterns that can inform energy planning and optimization.</p>
-                                            <h4>Key Features Used</h4>
-                                            <ul>
-                                                <li>Temperature: Ambient temperature affects heating and cooling demand</li>
-                                                <li>Humidity: Impacts cooling efficiency and comfort levels</li>
-                                                <li>Wind Speed: Affects heating/cooling loads and renewable generation</li>
-                                                <li>Energy Demand: Historical consumption patterns</li>
-                                            </ul>
-                                            <p>Principal Component Analysis (PCA) is used to reduce the dimensionality of the data for visualization purposes. The scatter plot shows the first two principal components, with points colored by their assigned cluster.</p>
-                                            
-                                            <h3>Forecasting Approach</h3>
-                                            <p>The application offers multiple forecasting models to predict energy demand based on historical patterns and weather conditions:</p>
-                                            <h4>Available Models</h4>
-                                            <ul>
-                                                <li><strong>Random Forest:</strong> Ensemble of decision trees that captures non-linear relationships</li>
-                                                <li><strong>XGBoost:</strong> Gradient boosting algorithm optimized for performance</li>
-                                                <li><strong>ARIMA:</strong> AutoRegressive Integrated Moving Average for time series forecasting</li>
-                                                <li><strong>SARIMA:</strong> Seasonal ARIMA that captures seasonal patterns in time series data</li>
-                                            </ul>
-                                            <p>The look-back window parameter determines how many previous time steps are considered when making predictions. A larger window captures longer-term patterns but may introduce noise.</p>
-                                        </div>
-                                        <div class="tab-pane" id="technical-tab">
-                                            <h3>Data Sources</h3>
-                                            <p>The application uses a combined dataset of historical energy demand and weather conditions for multiple cities. The data includes:</p>
-                                            <ul>
-                                                <li>Hourly energy demand measurements (MWh)</li>
-                                                <li>Weather parameters (temperature, humidity, wind speed)</li>
-                                                <li>Temporal features (hour, day of week, month, season)</li>
-                                            </ul>
-                                            <p>Missing values in the dataset are handled through appropriate imputation techniques: mean for temperature and wind speed, median for humidity.</p>
-                                            
-                                            <h3>Algorithms</h3>
-                                            <h4>K-means Clustering</h4>
-                                            <p>K-means partitions observations into k clusters by minimizing the within-cluster sum of squares. The algorithm:</p>
-                                            <ol>
-                                                <li>Initializes k centroids randomly</li>
-                                                <li>Assigns each observation to the nearest centroid</li>
-                                                <li>Updates centroids based on the mean of assigned observations</li>
-                                                <li>Repeats steps 2-3 until convergence</li>
-                                            </ol>
-                                            
-                                            <h4>Time Series Forecasting</h4>
-                                            <p>The forecasting models are trained on historical data with features including:</p>
-                                            <ul>
-                                                <li>Weather variables (temperature, humidity, wind speed)</li>
-                                                <li>Temporal features (hour, day of week, month, season)</li>
-                                                <li>City-specific characteristics (one-hot encoded)</li>
-                                            </ul>
-                                            
-                                            <h3>Evaluation Metrics</h3>
-                                            <p>The following metrics are used to evaluate forecasting performance:</p>
-                                            <ul>
-                                                <li><strong>Mean Squared Error (MSE):</strong> Average of squared differences between predicted and actual values</li>
-                                                <li><strong>Mean Absolute Error (MAE):</strong> Average of absolute differences between predicted and actual values</li>
-                                                <li><strong>R-squared (R²):</strong> Proportion of variance in the dependent variable explained by the model</li>
-                                            </ul>
-                                            <p>For clustering, the silhouette score is used to evaluate cluster quality, measuring how similar an object is to its own cluster compared to other clusters.</p>
-                                        </div>
+                                </div>
+                            </div>
+                            
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="headingThree">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                                        Technical Details
+                                    </button>
+                                </h2>
+                                <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#helpAccordion">
+                                    <div class="accordion-body">
+                                        <h5>Data Sources</h5>
+                                        <p>The application uses historical electric load data combined with weather data for multiple cities. The data includes:</p>
+                                        <ul>
+                                            <li>Electric load (MW)</li>
+                                            <li>Temperature (°F)</li>
+                                            <li>Humidity (%)</li>
+                                            <li>Wind speed (mph)</li>
+                                            <li>Day of week</li>
+                                            <li>Hour of day</li>
+                                            <li>Holiday indicators</li>
+                                        </ul>
+                                        
+                                        <h5>Forecasting Algorithms</h5>
+                                        <ul>
+                                            <li><strong>ARIMA:</strong> Time series forecasting model that uses autoregressive, differencing, and moving average components to model temporal dependencies.</li>
+                                            <li><strong>Linear Regression:</strong> Simple statistical model that assumes a linear relationship between input features and the target variable.</li>
+                                            <li><strong>Random Forest:</strong> Ensemble of decision trees that can capture complex relationships between features and target variables.</li>
+                                            <li><strong>XGBoost:</strong> Gradient boosting framework that uses sequential tree building to improve prediction accuracy.</li>
+                                            <li><strong>LSTM:</strong> Long Short-Term Memory neural network, a type of recurrent neural network (RNN) that can learn long-term dependencies in time series data. Particularly effective for complex patterns and long sequences.</li>
+                                        </ul>
+                                        
+                                        <h5>Clustering Algorithm</h5>
+                                        <p><strong>K-means:</strong> Partitioning method that divides the data into k clusters, where each observation belongs to the cluster with the nearest mean. The algorithm aims to minimize the within-cluster sum of squares.</p>
+                                        
+                                        <h5>Evaluation Metrics</h5>
+                                        <p>For forecasting models, performance is evaluated using:</p>
+                                        <ul>
+                                            <li><strong>Mean Absolute Error (MAE):</strong> Average of the absolute differences between predicted and actual values. Lower values indicate better performance.</li>
+                                            <li><strong>Root Mean Square Error (RMSE):</strong> Square root of the average of squared differences between predicted and actual values. More sensitive to large errors than MAE.</li>
+                                            <li><strong>Mean Absolute Percentage Error (MAPE):</strong> Average of the absolute percentage differences between predicted and actual values. Expressed as a percentage, making it easy to interpret.</li>
+                                        </ul>
+                                        
+                                        <p>For clustering, evaluation is more subjective and depends on the specific use case. Common metrics include:</p>
+                                        <ul>
+                                            <li>Silhouette Score</li>
+                                            <li>Davies-Bouldin Index</li>
+                                            <li>Calinski-Harabasz Index</li>
+                                        </ul>
                                     </div>
                                 </div>
                             </div>
@@ -591,1031 +969,1010 @@
             </div>
         </div>
     </div>
-</main>
 
-<footer>
-    <div class="container">
-        <p>&copy; 2023 Energy Demand Forecasting</p>
-    </div>
-</footer>
+    <div id="tooltip"></div>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
     <script>
-        // Global variables
-        let clusterChart = null;
-        let overallClusterChart = null;
-        let forecastChart = null;
-        let modelComparisonChart = null;
-        const formData = {
-            city: "",
-            startDate: "",
-            endDate: "",
-            k: 3,
-            lookback: 24,
-            model: "rf",
-        };
-        
-        // Store model results for comparison
-        const modelResults = {
-            rf: null,
-            xgb: null,
-            arima: null,
-            sarima: null
-        };
+        // Particle animation for background
+        class Particle {
+          constructor(canvas, options = {}) {
+            this.canvas = canvas
+            this.ctx = canvas.getContext("2d")
 
-        // Model information
-        const modelInfo = {
-            rf: {
-                name: "Random Forest",
-                description: "An ensemble learning method that operates by constructing multiple decision trees during training. Random Forest tends to average out extreme values and performs well with non-linear relationships, but may struggle with extrapolation beyond training data.",
-                strengths: ["Handles non-linear relationships", "Robust to outliers", "Good overall performance"],
-                weaknesses: ["Struggles with extrapolation", "Tends to average out extreme values", "May underestimate sudden changes"]
-            },
-            xgb: {
-                name: "XGBoost",
-                description: "A gradient boosting framework that uses an ensemble of weak prediction models to create a stronger model. XGBoost excels at structured data and can capture complex patterns better than Random Forest, but may overfit on noisy data.",
-                strengths: ["Excellent performance on structured data", "Better at handling outliers than RF", "Captures complex patterns well"],
-                weaknesses: ["May overfit on noisy data", "More complex to tune", "Computationally intensive"]
-            },
-            arima: {
-                name: "ARIMA",
-                description: "AutoRegressive Integrated Moving Average is a statistical model for analyzing and forecasting time series data. ARIMA is good for stationary time series but struggles with non-linear relationships and external variables like weather.",
-                strengths: ["Good for stationary time series", "Captures autoregressive patterns", "Simple to interpret"],
-                weaknesses: ["Poor at handling external variables", "Struggles with non-linear relationships", "More oscillation in predictions"]
-            },
-            sarima: {
-                name: "SARIMA",
-                description: "Seasonal ARIMA extends the ARIMA model to support seasonal data. It's better than ARIMA for data with clear seasonal patterns, making it more suitable for cities with strong seasonal energy demand variations.",
-                strengths: ["Good for seasonal time series", "Captures both trend and seasonality", "Better than ARIMA for seasonal patterns"],
-                weaknesses: ["Still struggles with external variables", "Complex parameter tuning", "Requires longer history for seasonal patterns"]
+            // Default options
+            this.options = {
+              count: options.count || 100,
+              color: options.color || "#ffffff",
+              radius: options.radius || { min: 1, max: 3 },
+              speed: options.speed || { min: 0.1, max: 0.5 },
+              opacity: options.opacity || { min: 0.1, max: 0.5 },
+              connectDistance: options.connectDistance || 150,
+              lineWidth: options.lineWidth || 0.5,
+              lineColor: options.lineColor || "rgba(255, 255, 255, 0.2)",
             }
-        };
 
-        // Initialize the application
-        document.addEventListener("DOMContentLoaded", function() {
-            console.log("App initialized");
-            
-            // Set default dates
-            setDefaultDates();
-            
-            // Set up event listeners
-            setupEventListeners();
-            
-            // Initialize tabs
-            initTabs();
-        });
+            this.particles = []
+            this.animationFrame = null
+            this.resizeTimeout = null
 
-        // Set default dates
-        function setDefaultDates() {
-            const today = new Date();
-            const oneMonthAgo = new Date();
-            oneMonthAgo.setMonth(today.getMonth() - 1);
+            this.init()
+            this.bindEvents()
+          }
 
-            const startDateInput = document.getElementById("start-date");
-            const endDateInput = document.getElementById("end-date");
+          init() {
+            this.setCanvasSize()
+            this.createParticles()
+            this.animate()
+          }
 
-            startDateInput.value = formatDate(oneMonthAgo);
-            endDateInput.value = formatDate(today);
-            
-            // Update form data with default dates
-            formData.startDate = formatDate(oneMonthAgo);
-            formData.endDate = formatDate(today);
-        }
+          setCanvasSize() {
+            this.canvas.width = window.innerWidth
+            this.canvas.height = window.innerHeight
+          }
 
-        // Format date as YYYY-MM-DD
-        function formatDate(date) {
-            const year = date.getFullYear();
-            const month = String(date.getMonth() + 1).padStart(2, "0");
-            const day = String(date.getDate()).padStart(2, "0");
-            return `${year}-${month}-${day}`;
-        }
+          createParticles() {
+            this.particles = []
 
-        // Set up event listeners
-        function setupEventListeners() {
-            // Form submission
-            document.getElementById("input-form").addEventListener("submit", function(e) {
-                e.preventDefault();
-                
-                // Update form data
-                formData.city = document.getElementById("city").value;
-                formData.startDate = document.getElementById("start-date").value;
-                formData.endDate = document.getElementById("end-date").value;
-                
-                console.log("Form submitted:", formData);
-                
-                // Fetch data
-                fetchData();
-            });
+            for (let i = 0; i < this.options.count; i++) {
+              const radius = this.randomBetween(this.options.radius.min, this.options.radius.max)
+              const opacity = this.randomBetween(this.options.opacity.min, this.options.opacity.max)
 
-            // K slider
-            document.getElementById("k-slider").addEventListener("input", function(e) {
-                const value = e.target.value;
-                document.getElementById("k-value").textContent = value;
-                formData.k = parseInt(value);
-                
-                // If we already have data, update the clustering
-                if (formData.city && formData.startDate && formData.endDate) {
-                    fetchClusterData();
-                }
-            });
-
-            // Lookback slider
-            document.getElementById("lookback-slider").addEventListener("input", function(e) {
-                const value = e.target.value;
-                document.getElementById("lookback-value").textContent = value;
-                formData.lookback = parseInt(value);
-                
-                // If we already have data, update the forecast
-                if (formData.city && formData.startDate && formData.endDate) {
-                    fetchForecastData();
-                }
-            });
-
-            // Model selection
-            document.querySelectorAll('input[name="model"]').forEach(function(radio) {
-                radio.addEventListener("change", function(e) {
-                    formData.model = e.target.value;
-                    
-                    // If we already have data, update the forecast
-                    if (formData.city && formData.startDate && formData.endDate) {
-                        fetchForecastData();
-                    }
-                });
-            });
-            
-            // Overall clustering button
-            document.getElementById("overall-cluster-btn").addEventListener("click", function() {
-                fetchOverallClusterData();
-                
-                // Switch to the overall clustering tab
-                const tabBtn = document.querySelector('.tab-btn[data-tab="overall-clustering"]');
-                if (tabBtn) {
-                    tabBtn.click();
-                }
-            });
-
-            document.querySelector('.tab-btn[data-tab="forecast"]').addEventListener('click', function() {
-                if (formData.city && !forecastChart) {
-                    fetchForecastData();
-                }
-            });
-        }
-
-        // Initialize tabs
-        function initTabs() {
-            // For all tab buttons
-            document.querySelectorAll(".tab-btn").forEach(function(button) {
-                button.addEventListener("click", function() {
-                    const tabId = this.getAttribute("data-tab");
-                    const tabContainer = this.closest(".tabs");
-                    
-                    // Deactivate all tabs in this container
-                    tabContainer.querySelectorAll(".tab-btn").forEach(function(btn) {
-                        btn.classList.remove("active");
-                    });
-                    
-                    tabContainer.querySelectorAll(".tab-pane").forEach(function(pane) {
-                        pane.classList.remove("active");
-                    });
-                    
-                    // Activate the selected tab
-                    this.classList.add("active");
-                    
-                    // Find the corresponding tab pane
-                    let tabPaneId;
-                    if (tabId === "clustering" || tabId === "forecasting") {
-                        tabPaneId = tabId + "-tab";
-                    } else if (["visualization", "overall-clustering", "forecast", "model-comparison", "help"].includes(tabId)) {
-                        tabPaneId = tabId + "-tab";
-                    } else if (["instructions", "approach", "technical"].includes(tabId)) {
-                        tabPaneId = tabId + "-tab";
-                    }
-                    
-                    const tabPane = document.getElementById(tabPaneId);
-                    if (tabPane) {
-                        tabPane.classList.add("active");
-                    }
-                    
-                    // If switching to forecast tab, make sure to show the forecast chart
-                    if (tabId === "forecast" && formData.city) {
-                        // If we already have forecast data, make sure it's visible
-                        if (document.getElementById("forecast-chart").style.display === "none") {
-                            document.getElementById("forecast-chart").style.display = "block";
-                        }
-                        // If we don't have forecast data yet, fetch it
-                        if (!forecastChart && formData.city) {
-                            fetchForecastData();
-                        }
-                    }
-                });
-            });
-        }
-
-        // Fetch both cluster and forecast data
-        function fetchData() {
-            fetchClusterData();
-            fetchForecastData();
-            
-            // Reset model results
-            for (const model in modelResults) {
-                modelResults[model] = null;
+              this.particles.push({
+                x: Math.random() * this.canvas.width,
+                y: Math.random() * this.canvas.height,
+                radius: radius,
+                opacity: opacity,
+                color: this.options.color,
+                speedX: this.randomBetween(-this.options.speed.max, this.options.speed.max),
+                speedY: this.randomBetween(-this.options.speed.max, this.options.speed.max),
+                lastX: 0,
+                lastY: 0,
+              })
             }
-            
-            // Fetch data for all models for comparison
-            fetchAllModelsData();
-        }
+          }
 
-        // Add this function to prevent caching
-        function fetchWithNoCache(url, options) {
-            const timestamp = new Date().getTime();
-            const noCacheUrl = url + (url.includes('?') ? '&' : '?') + '_nocache=' + timestamp;
-            return fetch(noCacheUrl, options);
-        }
+          randomBetween(min, max) {
+            return Math.random() * (max - min) + min
+          }
 
-        // Fetch cluster data
-        function fetchClusterData() {
-            // Show loading state
-            document.getElementById("cluster-empty").style.display = "none";
-            document.getElementById("cluster-loading").style.display = "flex";
-            
-            // Prepare request data
-            const requestData = {
-                city: formData.city,
-                start_date: formData.startDate,
-                end_date: formData.endDate,
-                k: formData.k
-            };
-            
-            console.log("Cluster request data:", requestData);
-            
-            // Make API request
-            fetch("/api/cluster", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(requestData),
+          bindEvents() {
+            window.addEventListener("resize", () => {
+              clearTimeout(this.resizeTimeout)
+              this.resizeTimeout = setTimeout(() => {
+                this.setCanvasSize()
+                this.createParticles()
+              }, 200)
             })
-            .then(function(response) {
-                if (!response.ok) {
-                    return response.json().then(function(err) {
-                        throw new Error(err.error || "Failed to fetch cluster data");
-                    });
+          }
+
+          animate() {
+            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
+
+            // Update and draw particles
+            for (let i = 0; i < this.particles.length; i++) {
+              const p = this.particles[i]
+
+              // Save last position
+              p.lastX = p.x
+              p.lastY = p.y
+
+              // Update position
+              p.x += p.speedX
+              p.y += p.speedY
+
+              // Bounce off edges
+              if (p.x < 0 || p.x > this.canvas.width) {
+                p.speedX *= -1
+              }
+
+              if (p.y < 0 || p.y > this.canvas.height) {
+                p.speedY *= -1
+              }
+
+              // Draw particle
+              this.ctx.beginPath()
+              this.ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2)
+              this.ctx.fillStyle = `rgba(255, 255, 255, ${p.opacity})`
+              this.ctx.fill()
+
+              // Connect particles
+              for (let j = i + 1; j < this.particles.length; j++) {
+                const p2 = this.particles[j]
+                const dx = p.x - p2.x
+                const dy = p.y - p2.y
+                const distance = Math.sqrt(dx * dx + dy * dy)
+
+                if (distance < this.options.connectDistance) {
+                  const opacity = 1 - distance / this.options.connectDistance
+                  this.ctx.beginPath()
+                  this.ctx.moveTo(p.x, p.y)
+                  this.ctx.lineTo(p2.x, p2.y)
+                  this.ctx.strokeStyle = `rgba(255, 255, 255, ${opacity * 0.2})`
+                  this.ctx.lineWidth = this.options.lineWidth
+                  this.ctx.stroke()
                 }
-                return response.json();
-            })
-            .then(function(data) {
-                console.log("Cluster data received:", data);
-                
-                // Hide loading state
-                document.getElementById("cluster-loading").style.display = "none";
-                
-                // Update chart
-                updateClusterChart(data);
-            })
-            .catch(function(error) {
-                console.error("Error fetching cluster data:", error);
-                
-                // Hide loading state and show empty state with error
-                document.getElementById("cluster-loading").style.display = "none";
-                document.getElementById("cluster-empty").style.display = "flex";
-                document.getElementById("cluster-empty").innerHTML = `
-                    <p>Error: ${error.message || "Failed to fetch cluster data"}</p>
-                `;
-            });
-        }
-        
-        // Fetch overall cluster data
-        function fetchOverallClusterData() {
-            // Show loading state
-            document.getElementById("overall-cluster-empty").style.display = "none";
-            document.getElementById("overall-cluster-loading").style.display = "flex";
-            
-            // Prepare request data
-            const requestData = {
-                k: formData.k
-            };
-            
-            console.log("Overall cluster request data:", requestData);
-            
-            // Make API request
-            fetch("/api/overall-cluster", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(requestData),
-            })
-            .then(function(response) {
-                if (!response.ok) {
-                    return response.json().then(function(err) {
-                        throw new Error(err.error || "Failed to fetch overall cluster data");
-                    });
-                }
-                return response.json();
-            })
-            .then(function(data) {
-                console.log("Overall cluster data received:", data);
-                
-                // Hide loading state
-                document.getElementById("overall-cluster-loading").style.display = "none";
-                
-                // Update chart
-                updateOverallClusterChart(data);
-            })
-            .catch(function(error) {
-                console.error("Error fetching overall cluster data:", error);
-                
-                // Hide loading state and show empty state with error
-                document.getElementById("overall-cluster-loading").style.display = "none";
-                document.getElementById("overall-cluster-empty").style.display = "flex";
-                document.getElementById("overall-cluster-empty").innerHTML = `
-                    <p>Error: ${error.message || "Failed to fetch overall cluster data"}</p>
-                `;
-            });
+              }
+            }
+
+            this.animationFrame = requestAnimationFrame(() => this.animate())
+          }
+
+          destroy() {
+            cancelAnimationFrame(this.animationFrame)
+            this.particles = []
+            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
+          }
         }
 
-    // Fetch forecast data
-    function fetchForecastData() {
-        // Show loading state
-        document.getElementById("forecast-empty").style.display = "none";
-        document.getElementById("forecast-loading").style.display = "flex";
-        
-        // Prepare request data
-        const requestData = {
-            city: formData.city,
-            start_date: formData.startDate,
-            end_date: formData.endDate,
-            lookback: formData.lookback,
-            model: formData.model
-        };
-        
-        console.log("Forecast request data:", requestData);
-        
-        // Make API request
-        fetch("/api/forecast", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(requestData),
-        })
-        .then(function(response) {
-            if (!response.ok) {
-                return response.json().then(function(err) {
-                    throw new Error(err.error || "Failed to fetch forecast data");
-                });
-            }
-            return response.json();
-        })
-        .then(function(data) {
-            console.log("Forecast data received:", data);
-            
-            // Validate data
-            if (!data.actual || !data.predicted || !data.timestamps) {
-                console.error("Invalid forecast data format:", data);
-                throw new Error("Invalid forecast data format");
-            }
-            
-            // Hide loading state
-            document.getElementById("forecast-loading").style.display = "none";
-            
-            // Update chart
-            updateForecastChart(data);
-            
-            // Update metrics
-            updateMetrics(data);
-            
-            // Store the results for this model
-            modelResults[data.model_type] = data;
-            
-            // Display input summary if available
-            if (data.input_summary) {
-                const metricsContainer = document.getElementById("forecast-metrics");
-                const summaryBadge = document.createElement("div");
-                summaryBadge.className = "metric-badge";
-                summaryBadge.style.backgroundColor = "#e2f0ff";
-                summaryBadge.textContent = data.input_summary;
-                metricsContainer.appendChild(summaryBadge);
-            }
-        })
-        .catch(function(error) {
-            console.error("Error fetching forecast data:", error);
-            
-            // Hide loading state and show empty state with error
-            document.getElementById("forecast-loading").style.display = "none";
-            document.getElementById("forecast-empty").style.display = "flex";
-            document.getElementById("forecast-empty").innerHTML = `
-                <p>Error: ${error.message || "Failed to fetch forecast data"}</p>
-            `;
-        });
-    }
-    
-    // Fetch data for all models for comparison
-    function fetchAllModelsData() {
-        // Show loading state
-        document.getElementById("model-comparison-empty").style.display = "none";
-        document.getElementById("model-comparison-loading").style.display = "flex";
-        
-        // Array of models to fetch
-        const models = ["rf", "xgb", "arima", "sarima"];
-        const promises = [];
-        
-        // Fetch data for each model
-        models.forEach(function(model) {
-            const requestData = {
-                city: formData.city,
-                start_date: formData.startDate,
-                end_date: formData.endDate,
-                lookback: formData.lookback,
-                model: model
-            };
-            
-            const promise = fetch("/api/forecast", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(requestData),
+        document.addEventListener("DOMContentLoaded", () => {
+          // Initialize particle background
+          const canvas = document.getElementById("particles-canvas")
+          if (canvas) {
+            new Particle(canvas, {
+              count: 100,
+              radius: { min: 1, max: 3 },
+              speed: { min: 0.05, max: 0.2 },
+              opacity: { min: 0.1, max: 0.5 },
+              connectDistance: 150,
+              lineColor: "rgba(255, 255, 255, 0.1)",
             })
-            .then(response => response.json())
-            .then(data => {
-                modelResults[model] = data;
-                return data;
-            });
-            
-            promises.push(promise);
-        });
-        
-        // When all promises are resolved
-        Promise.all(promises)
-            .then(function(results) {
-                // Hide loading state
-                document.getElementById("model-comparison-loading").style.display = "none";
-                
-                // Update model comparison chart
-                updateModelComparisonChart(results);
+          }
+
+          // Function to format numbers with commas for thousands
+          function formatNumber(num) {
+            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+          }
+
+          // Initialize date pickers with default dates (Jan 1-2, 2019)
+          flatpickr("#start_date", {
+            dateFormat: "Y-m-d",
+            defaultDate: "2019-01-01",
+            theme: "dark",
+          })
+
+          flatpickr("#end_date", {
+            dateFormat: "Y-m-d",
+            defaultDate: "2019-01-02",
+            theme: "dark",
+          })
+
+          // Update k value display
+          const kValueSlider = document.getElementById("k_value")
+          const kValueDisplay = document.getElementById("k_value_display")
+
+          if (kValueSlider && kValueDisplay) {
+            kValueSlider.addEventListener("input", function () {
+              kValueDisplay.textContent = this.value
             })
-            .catch(function(error) {
-                console.error("Error fetching model comparison data:", error);
-                
-                // Hide loading state and show empty state with error
-                document.getElementById("model-comparison-loading").style.display = "none";
-                document.getElementById("model-comparison-empty").style.display = "flex";
-                document.getElementById("model-comparison-empty").innerHTML = `
-                    <p>Error: ${error.message || "Failed to fetch model comparison data"}</p>
-                `;
-            });
-    }
+          }
 
-// Fix the forecast chart display issue by modifying the updateForecastChart function
+          // Forecast form submission
+          const forecastForm = document.getElementById("forecast-form")
+          const forecastLoading = document.getElementById("forecast-loading")
+          const forecastResult = document.getElementById("forecast-result")
+          const forecastPlot = document.getElementById("forecast-plot")
+          const forecastSummary = document.getElementById("forecast-summary")
+          const forecastSummaryStats = document.getElementById("forecast-summary-stats")
+          const pointInfo = document.getElementById("point-info")
+          const pointDetails = document.getElementById("point-details")
+          const metricsContainer = document.getElementById("metrics-container")
+          const maeValue = document.getElementById("mae-value")
+          const rmseValue = document.getElementById("rmse-value")
+          const mapeValue = document.getElementById("mape-value")
+          const timeSelector = document.getElementById("time-selector")
 
-// Find the updateForecastChart function and replace it with this improved version:
-function updateForecastChart(data) {
-    // Make sure the chart canvas is visible
-    document.getElementById("forecast-chart").style.display = "block";
-    
-    // Prepare data
-    const labels = data.timestamps;
-    
-    // Destroy previous chart if it exists
-    if (forecastChart) {
-        forecastChart.destroy();
-    }
-    
-    // Set colors based on model type
-    let predictedColor;
-    switch(data.model_type) {
-        case 'rf':
-            predictedColor = 'rgba(66, 133, 244, 1)'; // Google Blue
-            break;
-        case 'xgb':
-            predictedColor = 'rgba(234, 67, 53, 1)'; // Google Red
-            break;
-        case 'arima':
-            predictedColor = 'rgba(251, 188, 5, 1)'; // Google Yellow
-            break;
-        case 'sarima':
-            predictedColor = 'rgba(52, 168, 83, 1)'; // Google Green
-            break;
-        default:
-            predictedColor = 'rgba(255, 99, 132, 1)'; // Default red
-    }
-    
-    console.log("Rendering forecast chart with data:", {
-        labels: labels,
-        actual: data.actual,
-        predicted: data.predicted
-    });
-    
-    // Create new chart
-    const ctx = document.getElementById("forecast-chart").getContext("2d");
-    forecastChart = new Chart(ctx, {
-        type: "line",
-        data: {
-            labels: labels,
-            datasets: [
-                {
-                    label: "Actual Demand",
-                    data: data.actual,
-                    borderColor: "rgba(54, 162, 235, 1)",
-                    backgroundColor: "rgba(54, 162, 235, 0.1)",
-                    borderWidth: 2,
-                    tension: 0.1,
-                    fill: false
+          // View options
+          const viewAll = document.getElementById("view-all")
+          const viewPredicted = document.getElementById("view-predicted")
+          const viewActual = document.getElementById("view-actual")
+
+          let currentForecastData = null
+          let currentPlot = null
+
+          // Function to update the plot based on view options
+          function updatePlot(viewOption) {
+            if (!currentForecastData) return
+
+            const traces = []
+
+            if (viewOption === "all" || viewOption === "predicted") {
+              // Predicted values trace
+              traces.push({
+                x: currentForecastData.dates,
+                y: currentForecastData.predictions,
+                type: "scatter",
+                mode: "lines+markers",
+                name: "Predicted Load",
+                line: {
+                  color: "rgb(139, 92, 246)",
+                  width: 3,
+                  shape: "spline",
                 },
-                {
-                    label: `${modelInfo[data.model_type].name} Prediction`,
-                    data: data.predicted,
-                    borderColor: predictedColor,
-                    backgroundColor: predictedColor.replace('1)', '0.1)'),
-                    borderWidth: 2,
-                    borderDash: data.model_type === 'rf' || data.model_type === 'xgb' ? [] : [5, 5],
-                    tension: data.model_type === 'arima' || data.model_type === 'sarima' ? 0.3 : 0.1,
-                    fill: false
+                marker: {
+                  size: 8,
+                  color: "rgb(139, 92, 246)",
+                  line: {
+                    color: "rgb(91, 33, 182)",
+                    width: 1,
+                  },
                 },
-            ],
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                x: {
-                    title: {
-                        display: true,
-                        text: "Time",
+                hovertemplate: "<b>Date:</b> %{x}<br><b>Predicted:</b> %{y:.2f} MW<extra></extra>",
+              })
+            }
+
+            if (viewOption === "all" || viewOption === "actual") {
+              // Actual values trace (if available)
+              if (currentForecastData.actual && currentForecastData.actual.length > 0) {
+                traces.push({
+                  x: currentForecastData.actual_dates,
+                  y: currentForecastData.actual,
+                  type: "scatter",
+                  mode: "lines+markers",
+                  name: "Actual Load",
+                  line: {
+                    color: "rgb(52, 211, 153)",
+                    width: 3,
+                    shape: "spline",
+                  },
+                  marker: {
+                    size: 8,
+                    color: "rgb(52, 211, 153)",
+                    line: {
+                      color: "rgb(5, 150, 105)",
+                      width: 1,
                     },
-                    ticks: {
-                        maxRotation: 45,
-                        minRotation: 45
-                    }
+                  },
+                  hovertemplate: "<b>Date:</b> %{x}<br><b>Actual:</b> %{y:.2f} MW<extra></extra>",
+                })
+              }
+            }
+
+            const layout = {
+              title: {
+                text: "Electric Load Forecast",
+                font: {
+                  family: "Poppins, sans-serif",
+                  size: 24,
+                  color: "#f3f4f6",
                 },
-                y: {
-                    title: {
-                        display: true,
-                        text: "Energy Demand (MWh)",
-                    },
-                    beginAtZero: false
-                },
-            },
-            plugins: {
+              },
+              xaxis: {
                 title: {
-                    display: true,
-                    text: `Energy Demand Forecast for ${data.city.toUpperCase()}`,
-                    font: {
-                        size: 16
-                    }
+                  text: "Date & Time",
+                  font: {
+                    family: "Poppins, sans-serif",
+                    size: 14,
+                    color: "#9ca3af",
+                  },
                 },
-                tooltip: {
-                    mode: 'index',
-                    intersect: false,
-                    callbacks: {
-                        label: function(context) {
-                            let label = context.dataset.label || '';
-                            if (label) {
-                                label += ': ';
-                            }
-                            if (context.parsed.y !== null) {
-                                label += new Intl.NumberFormat('en-US', { 
-                                    minimumFractionDigits: 1,
-                                    maximumFractionDigits: 1 
-                                }).format(context.parsed.y) + ' MWh';
-                            }
-                            return label;
-                        }
-                    }
-                }
-            },
-        },
-    });
-}
-
-// Also modify the fetchForecastData function to add debugging
-function fetchForecastData() {
-    // Show loading state
-    document.getElementById("forecast-empty").style.display = "none";
-    document.getElementById("forecast-loading").style.display = "flex";
-    
-    // Prepare request data
-    const requestData = {
-        city: formData.city,
-        start_date: formData.startDate,
-        end_date: formData.endDate,
-        lookback: formData.lookback,
-        model: formData.model
-    };
-    
-    console.log("Forecast request data:", requestData);
-    
-    // Make API request
-    fetch("/api/forecast", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify(requestData),
-    })
-    .then(function(response) {
-        if (!response.ok) {
-            return response.json().then(function(err) {
-                throw new Error(err.error || "Failed to fetch forecast data");
-            });
-        }
-        return response.json();
-    })
-    .then(function(data) {
-        console.log("Forecast data received:", data);
-        
-        // Validate data
-        if (!data.actual || !data.predicted || !data.timestamps) {
-            console.error("Invalid forecast data format:", data);
-            throw new Error("Invalid forecast data format");
-        }
-        
-        // Hide loading state
-        document.getElementById("forecast-loading").style.display = "none";
-        
-        // Update chart
-        updateForecastChart(data);
-        
-        // Update metrics
-        updateMetrics(data);
-        
-        // Store the results for this model
-        modelResults[data.model_type] = data;
-        
-        // Display input summary if available
-        if (data.input_summary) {
-            const metricsContainer = document.getElementById("forecast-metrics");
-            const summaryBadge = document.createElement("div");
-            summaryBadge.className = "metric-badge";
-            summaryBadge.style.backgroundColor = "#e2f0ff";
-            summaryBadge.textContent = data.input_summary;
-            metricsContainer.appendChild(summaryBadge);
-        }
-    })
-    .catch(function(error) {
-        console.error("Error fetching forecast data:", error);
-        
-        // Hide loading state and show empty state with error
-        document.getElementById("forecast-loading").style.display = "none";
-        document.getElementById("forecast-empty").style.display = "flex";
-        document.getElementById("forecast-empty").innerHTML = `
-            <p>Error: ${error.message || "Failed to fetch forecast data"}</p>
-        `;
-    });
-}
-
-// Add a function to switch to the forecast tab and ensure data is loaded
-function switchToForecastTab() {
-    // Find the forecast tab button and click it
-    const forecastTabBtn = document.querySelector('.tab-btn[data-tab="forecast"]');
-    if (forecastTabBtn) {
-        forecastTabBtn.click();
-    }
-    
-    // If we have a city selected but no forecast data, fetch it
-    if (formData.city && !forecastChart) {
-        fetchForecastData();
-    }
-}
-
-// Add this to the setupEventListeners function
-// Find the setupEventListeners function and add this at the end:
-document.querySelector('.tab-btn[data-tab="forecast"]').addEventListener('click', function() {
-    if (formData.city && !forecastChart) {
-        fetchForecastData();
-    }
-});
-
-    // Update cluster chart
-    function updateClusterChart(data) {
-        // Prepare datasets
-        const datasets = [];
-        const colors = [
-            "rgba(0, 99, 220, 0.8)",      // Darker blue
-            "rgba(220, 20, 60, 0.8)",     // Crimson
-            "rgba(0, 128, 0, 0.8)",       // Dark green
-            "rgba(184, 134, 11, 0.8)",    // Dark goldenrod
-            "rgba(128, 0, 128, 0.8)",     // Purple
-            "rgba(210, 105, 30, 0.8)",    // Chocolate
-            "rgba(47, 79, 79, 0.8)",      // Dark slate gray
-            "rgba(178, 34, 34, 0.8)",     // Firebrick
-            "rgba(0, 139, 139, 0.8)",     // Dark cyan
-            "rgba(85, 107, 47, 0.8)",     // Dark olive green
-        ];
-        
-        // Group data by cluster
-        const clusterGroups = {};
-        for (let i = 0; i < data.labels.length; i++) {
-            const cluster = data.labels[i];
-            if (!clusterGroups[cluster]) {
-                clusterGroups[cluster] = [];
+                showgrid: true,
+                gridcolor: "rgba(255,255,255,0.1)",
+                gridwidth: 1,
+                tickfont: {
+                  family: "Poppins, sans-serif",
+                  size: 12,
+                  color: "#9ca3af",
+                },
+              },
+              yaxis: {
+                title: {
+                  text: "Load (MW)",
+                  font: {
+                    family: "Poppins, sans-serif",
+                    size: 14,
+                    color: "#9ca3af",
+                  },
+                },
+                showgrid: true,
+                gridcolor: "rgba(255,255,255,0.1)",
+                gridwidth: 1,
+                tickformat: ",d", // Add comma separators for thousands
+                range: [0, 25000], // Fixed y-axis range from 0 to 25,000 MW
+                tickfont: {
+                  family: "Poppins, sans-serif",
+                  size: 12,
+                  color: "#9ca3af",
+                },
+              },
+              hovermode: "closest",
+              legend: {
+                x: 0,
+                y: 1,
+                font: {
+                  family: "Poppins, sans-serif",
+                  size: 12,
+                  color: "#f3f4f6",
+                },
+              },
+              margin: {
+                l: 60,
+                r: 30,
+                b: 60,
+                t: 50,
+                pad: 4,
+              },
+              plot_bgcolor: "rgba(0,0,0,0.2)",
+              paper_bgcolor: "rgba(0,0,0,0)",
+              font: {
+                family: "Poppins, sans-serif",
+                color: "#f3f4f6",
+              },
             }
-            clusterGroups[cluster].push({
-                x: data.pca_data[i][0],
-                y: data.pca_data[i][1],
-            });
-        }
-        
-        // Create datasets for each cluster
-        Object.keys(clusterGroups).forEach(function(cluster, index) {
-            datasets.push({
-                label: `Cluster ${parseInt(cluster) + 1}`,
-                data: clusterGroups[cluster],
-                backgroundColor: colors[index % colors.length],
-                pointRadius: 5,
-                pointHoverRadius: 7,
-            });
-        });
-        
-        // Destroy previous chart if it exists
-        if (clusterChart) {
-            clusterChart.destroy();
-        }
-        
-        // Create new chart
-        const ctx = document.getElementById("cluster-chart").getContext("2d");
-        clusterChart = new Chart(ctx, {
-            type: "scatter",
-            data: {
-                datasets: datasets,
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    x: {
-                        title: {
-                            display: true,
-                            text: "PCA Component 1",
-                        },
-                    },
-                    y: {
-                        title: {
-                            display: true,
-                            text: "PCA Component 2",
-                        },
-                    },
-                },
-                plugins: {
-                    title: {
-                        display: true,
-                        text: `K-Means Clustering for ${data.city.toUpperCase()} (k=${formData.k}, Silhouette Score: ${data.silhouette_score.toFixed(3)})`,
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                return `${context.dataset.label}: (${context.parsed.x.toFixed(2)}, ${context.parsed.y.toFixed(2)})`;
-                            },
-                        },
-                    },
-                },
-            },
-        });
-    }
-    
-    // Update overall cluster chart
-    function updateOverallClusterChart(data) {
-        // Prepare datasets
-        const datasets = [];
-        const colors = [
-            "rgba(0, 99, 220, 0.8)",      // Darker blue
-            "rgba(220, 20, 60, 0.8)",     // Crimson
-            "rgba(0, 128, 0, 0.8)",       // Dark green
-            "rgba(184, 134, 11, 0.8)",    // Dark goldenrod
-            "rgba(128, 0, 128, 0.8)",     // Purple
-            "rgba(210, 105, 30, 0.8)",    // Chocolate
-            "rgba(47, 79, 79, 0.8)",      // Dark slate gray
-            "rgba(178, 34, 34, 0.8)",     // Firebrick
-            "rgba(0, 139, 139, 0.8)",     // Dark cyan
-            "rgba(85, 107, 47, 0.8)",     // Dark olive green
-        ];
-        
-        // Group data by cluster
-        const clusterGroups = {};
-        for (let i = 0; i < data.cluster_labels.length; i++) {
-            const cluster = data.cluster_labels[i];
-            if (!clusterGroups[cluster]) {
-                clusterGroups[cluster] = [];
+
+            const config = {
+              responsive: true,
+              displayModeBar: true,
+              modeBarButtonsToRemove: ["lasso2d", "select2d"],
+              displaylogo: false,
             }
-            clusterGroups[cluster].push({
-                x: data.pca_data[i][0],
-                y: data.pca_data[i][1],
-                city: data.city_labels[i]
-            });
-        }
-        
-        // Create datasets for each cluster
-        Object.keys(clusterGroups).forEach(function(cluster, index) {
-            datasets.push({
-                label: `Cluster ${parseInt(cluster) + 1}`,
-                data: clusterGroups[cluster],
-                backgroundColor: colors[index % colors.length],
-                pointRadius: 3,
-                pointHoverRadius: 5,
-            });
-        });
-        
-        // Destroy previous chart if it exists
-        if (overallClusterChart) {
-            overallClusterChart.destroy();
-        }
-        
-        // Create new chart
-        const ctx = document.getElementById("overall-cluster-chart").getContext("2d");
-        overallClusterChart = new Chart(ctx, {
-            type: "scatter",
-            data: {
-                datasets: datasets,
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    x: {
-                        title: {
-                            display: true,
-                            text: "PCA Component 1",
-                        },
-                    },
-                    y: {
-                        title: {
-                            display: true,
-                            text: "PCA Component 2",
-                        },
-                    },
+
+            Plotly.newPlot(forecastPlot, traces, layout, config)
+
+            // Add click event to show point details
+            forecastPlot.on("plotly_click", (eventData) => {
+              const pointIndex = eventData.points[0].pointIndex
+              const pointData = currentForecastData.detailed_data[pointIndex]
+
+              let detailsHTML = `
+                <p><strong>Date:</strong> ${pointData.formatted_date || pointData.date.split(" ")[0]}</p>
+                <p><strong>Time:</strong> ${pointData.formatted_time || pointData.date.split(" ")[1]}</p>
+                <p><strong>Predicted Load:</strong> ${formatNumber(pointData.prediction.toFixed(2))} MW</p>
+              `
+
+              if (pointData.actual !== undefined) {
+                const error = Math.abs(pointData.actual - pointData.prediction)
+                const errorPercent = ((error / pointData.actual) * 100).toFixed(2)
+
+                detailsHTML += `
+                  <p><strong>Actual Load:</strong> ${formatNumber(pointData.actual.toFixed(2))} MW</p>
+                  <p><strong>Absolute Error:</strong> ${formatNumber(error.toFixed(2))} MW (${errorPercent}%)</p>
+                `
+              }
+
+              pointDetails.innerHTML = detailsHTML
+              pointInfo.style.display = "block"
+
+              // Add animation
+              pointInfo.classList.remove("fade-in")
+              void pointInfo.offsetWidth // Trigger reflow
+              pointInfo.classList.add("fade-in")
+            })
+
+            currentPlot = forecastPlot
+          }
+
+          // View option event listeners
+          if (viewAll && viewPredicted && viewActual) {
+            viewAll.addEventListener("click", () => {
+              viewAll.classList.add("active")
+              viewPredicted.classList.remove("active")
+              viewActual.classList.remove("active")
+              updatePlot("all")
+            })
+
+            viewPredicted.addEventListener("click", () => {
+              viewAll.classList.remove("active")
+              viewPredicted.classList.add("active")
+              viewActual.classList.remove("active")
+              updatePlot("predicted")
+            })
+
+            viewActual.addEventListener("click", () => {
+              viewAll.classList.remove("active")
+              viewPredicted.classList.remove("active")
+              viewActual.classList.add("active")
+              updatePlot("actual")
+            })
+          }
+
+          // Function to filter data by day
+          function filterByDay(day) {
+            if (!currentForecastData) return
+
+            // Filter detailed data for the selected day
+            const filteredData = currentForecastData.detailed_data.filter((point) => {
+              return point.day === day
+            })
+
+            // Create new traces for the filtered data
+            const traces = []
+
+            // Predicted values trace
+            traces.push({
+              x: filteredData.map((point) => point.date),
+              y: filteredData.map((point) => point.prediction),
+              type: "scatter",
+              mode: "lines+markers",
+              name: "Predicted Load",
+              line: {
+                color: "rgb(139, 92, 246)",
+                width: 3,
+                shape: "spline",
+              },
+              marker: {
+                size: 8,
+                color: "rgb(139, 92, 246)",
+                line: {
+                  color: "rgb(91, 33, 182)",
+                  width: 1,
                 },
-                plugins: {
-                    title: {
-                        display: true,
-                        text: `Overall K-Means Clustering Across All Cities (k=${formData.k}, Silhouette Score: ${data.silhouette_score.toFixed(3)})`,
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                const point = context.raw;
-                                return `${context.dataset.label} - ${point.city.toUpperCase()}: (${context.parsed.x.toFixed(2)}, ${context.parsed.y.toFixed(2)})`;
-                            },
+              },
+              hovertemplate: "<b>Time:</b> %{x}<br><b>Predicted:</b> %{y:.2f} MW<extra></extra>",
+            })
+
+            // Actual values trace (if available)
+            const actualData = filteredData.filter((point) => point.actual !== undefined)
+            if (actualData.length > 0) {
+              traces.push({
+                x: actualData.map((point) => point.date),
+                y: actualData.map((point) => point.actual),
+                type: "scatter",
+                mode: "lines+markers",
+                name: "Actual Load",
+                line: {
+                  color: "rgb(52, 211, 153)",
+                  width: 3,
+                  shape: "spline",
+                },
+                marker: {
+                  size: 8,
+                  color: "rgb(52, 211, 153)",
+                  line: {
+                    color: "rgb(5, 150, 105)",
+                    width: 1,
+                  },
+                },
+                hovertemplate: "<b>Time:</b> %{x}<br><b>Actual:</b> %{y:.2f} MW<extra></extra>",
+              })
+            }
+
+            const layout = {
+              title: {
+                text: `Electric Load Forecast - ${filteredData[0]?.formatted_date || "Day " + day}`,
+                font: {
+                  family: "Poppins, sans-serif",
+                  size: 24,
+                  color: "#f3f4f6",
+                },
+              },
+              xaxis: {
+                title: {
+                  text: "Time",
+                  font: {
+                    family: "Poppins, sans-serif",
+                    size: 14,
+                    color: "#9ca3af",
+                  },
+                },
+                showgrid: true,
+                gridcolor: "rgba(255,255,255,0.1)",
+                gridwidth: 1,
+                tickfont: {
+                  family: "Poppins, sans-serif",
+                  size: 12,
+                  color: "#9ca3af",
+                },
+              },
+              yaxis: {
+                title: {
+                  text: "Load (MW)",
+                  font: {
+                    family: "Poppins, sans-serif",
+                    size: 14,
+                    color: "#9ca3af",
+                  },
+                },
+                showgrid: true,
+                gridcolor: "rgba(255,255,255,0.1)",
+                gridwidth: 1,
+                tickformat: ",d", // Add comma separators for thousands
+                range: [0, 25000], // Fixed y-axis range from 0 to 25,000 MW
+                tickfont: {
+                  family: "Poppins, sans-serif",
+                  size: 12,
+                  color: "#9ca3af",
+                },
+              },
+              hovermode: "closest",
+              legend: {
+                x: 0,
+                y: 1,
+                font: {
+                  family: "Poppins, sans-serif",
+                  size: 12,
+                  color: "#f3f4f6",
+                },
+              },
+              margin: {
+                l: 60,
+                r: 30,
+                b: 60,
+                t: 50,
+                pad: 4,
+              },
+              plot_bgcolor: "rgba(0,0,0,0.2)",
+              paper_bgcolor: "rgba(0,0,0,0)",
+              font: {
+                family: "Poppins, sans-serif",
+                color: "#f3f4f6",
+              },
+            }
+
+            const config = {
+              responsive: true,
+              displayModeBar: true,
+              modeBarButtonsToRemove: ["lasso2d", "select2d"],
+              displaylogo: false,
+            }
+
+            Plotly.newPlot(forecastPlot, traces, layout, config)
+
+            // Add click event to show point details
+            forecastPlot.on("plotly_click", (eventData) => {
+              const pointIndex = eventData.points[0].pointIndex
+              const pointData = filteredData[pointIndex]
+
+              let detailsHTML = `
+                <p><strong>Date:</strong> ${pointData.formatted_date || pointData.date.split(" ")[0]}</p>
+                <p><strong>Time:</strong> ${pointData.formatted_time || pointData.date.split(" ")[1]}</p>
+                <p><strong>Predicted Load:</strong> ${formatNumber(pointData.prediction.toFixed(2))} MW</p>
+              `
+
+              if (pointData.actual !== undefined) {
+                const error = Math.abs(pointData.actual - pointData.prediction)
+                const errorPercent = ((error / pointData.actual) * 100).toFixed(2)
+
+                detailsHTML += `
+                  <p><strong>Actual Load:</strong> ${formatNumber(pointData.actual.toFixed(2))} MW</p>
+                  <p><strong>Absolute Error:</strong> ${formatNumber(error.toFixed(2))} MW (${errorPercent}%)</p>
+                `
+              }
+
+              pointDetails.innerHTML = detailsHTML
+              pointInfo.style.display = "block"
+
+              // Add animation
+              pointInfo.classList.remove("fade-in")
+              void pointInfo.offsetWidth // Trigger reflow
+              pointInfo.classList.add("fade-in")
+            })
+          }
+
+          // Function to create time selector buttons
+          function createTimeSelector(data) {
+            if (!data || !data.detailed_data || data.detailed_data.length === 0 || !timeSelector) return
+
+            // Get unique days from the data
+            const uniqueDays = [
+              ...new Set(
+                data.detailed_data.map((point) => {
+                  const date = new Date(point.date)
+                  return date.getDate()
+                }),
+              ),
+            ]
+
+            // Clear existing buttons
+            timeSelector.innerHTML = ""
+
+            // Create "All Days" button
+            const allButton = document.createElement("button")
+            allButton.className = "time-btn active"
+            allButton.textContent = "All Days"
+            allButton.addEventListener("click", function () {
+              // Remove active class from all buttons
+              document.querySelectorAll(".time-btn").forEach((btn) => btn.classList.remove("active"))
+              // Add active class to this button
+              this.classList.add("active")
+              // Update plot with all data
+              updatePlot(
+                viewAll.classList.contains("active")
+                  ? "all"
+                  : viewPredicted.classList.contains("active")
+                    ? "predicted"
+                    : "actual",
+              )
+            })
+            timeSelector.appendChild(allButton)
+
+            // Create a button for each day
+            uniqueDays.forEach((day) => {
+              const dayData = data.detailed_data.find((point) => new Date(point.date).getDate() === day)
+              const formattedDate = dayData.formatted_date || new Date(dayData.date).toLocaleDateString()
+
+              const button = document.createElement("button")
+              button.className = "time-btn"
+              button.textContent = formattedDate
+              button.addEventListener("click", function () {
+                // Remove active class from all buttons
+                document.querySelectorAll(".time-btn").forEach((btn) => btn.classList.remove("active"))
+                // Add active class to this button
+                this.classList.add("active")
+                // Filter data by day
+                filterByDay(day)
+              })
+              timeSelector.appendChild(button)
+            })
+
+            // Show the time selector
+            timeSelector.style.display = "flex"
+          }
+
+          if (forecastForm) {
+            forecastForm.addEventListener("submit", (e) => {
+              e.preventDefault()
+
+              // Show loading indicator
+              if (forecastLoading) forecastLoading.style.display = "block"
+              if (forecastResult) forecastResult.style.display = "none"
+              if (pointInfo) pointInfo.style.display = "none"
+              if (metricsContainer) metricsContainer.style.display = "none"
+
+              // Get form data
+              const formData = new FormData(forecastForm)
+
+              // Send request to server
+              fetch("/forecast", {
+                method: "POST",
+                body: formData,
+              })
+                .then((response) => response.json())
+                .then((data) => {
+                  if (data.error) {
+                    alert(data.error)
+                    if (forecastLoading) forecastLoading.style.display = "none"
+                    return
+                  }
+
+                  // Store data globally
+                  currentForecastData = data
+
+                  // Update the plot
+                  updatePlot("all")
+
+                  // Create time selector if hourly data
+                  if (data.forecast_interval === "hourly" || data.forecast_interval === "two_hourly") {
+                    createTimeSelector(data)
+                  } else if (timeSelector) {
+                    timeSelector.style.display = "none"
+                  }
+
+                  // Display metrics if available
+                  if (
+                    data.metrics &&
+                    Object.keys(data.metrics).length > 0 &&
+                    maeValue &&
+                    rmseValue &&
+                    mapeValue &&
+                    metricsContainer
+                  ) {
+                    // Calculate percentage metrics
+                    const maePercent = ((data.metrics.mae / data.metrics.actual_mean) * 100).toFixed(2)
+                    const rmsePercent = ((data.metrics.rmse / data.metrics.actual_mean) * 100).toFixed(2)
+
+                    maeValue.textContent = `${maePercent}%`
+                    rmseValue.textContent = `${rmsePercent}%`
+                    mapeValue.textContent = `${data.metrics.mape.toFixed(2)}%`
+                    metricsContainer.style.display = "block"
+
+                    // Add animation
+                    metricsContainer.classList.remove("fade-in")
+                    void metricsContainer.offsetWidth // Trigger reflow
+                    metricsContainer.classList.add("fade-in")
+                  } else if (metricsContainer) {
+                    metricsContainer.style.display = "none"
+                  }
+
+                  // Calculate summary statistics
+                  const predictions = data.predictions
+                  const avg = predictions.reduce((a, b) => a + b, 0) / predictions.length
+                  const max = Math.max(...predictions)
+                  const min = Math.min(...predictions)
+
+                  // Display summary stats
+                  if (forecastSummaryStats) {
+                    forecastSummaryStats.innerHTML = `
+                    <div class="stat-item">
+                      <div class="stat-label">Average Load</div>
+                      <div class="stat-value">${formatNumber(avg.toFixed(2))} MW</div>
+                    </div>
+                    <div class="stat-item">
+                      <div class="stat-label">Maximum Load</div>
+                      <div class="stat-value">${formatNumber(max.toFixed(2))} MW</div>
+                    </div>
+                    <div class="stat-item">
+                      <div class="stat-label">Minimum Load</div>
+                      <div class="stat-value">${formatNumber(min.toFixed(2))} MW</div>
+                    </div>
+                  `
+                  }
+
+                  // Display summary text
+                  if (forecastSummary) {
+                    const city = document.getElementById("city").options[document.getElementById("city").selectedIndex].text
+                    const modelType =
+                      document.getElementById("model_type").options[document.getElementById("model_type").selectedIndex].text
+                    const startDate = document.getElementById("start_date").value
+                    const endDate = document.getElementById("end_date").value
+
+                    forecastSummary.innerHTML = `
+                    This forecast shows the predicted electric load for <strong>${city}</strong> from <strong>${startDate}</strong> to <strong>${endDate}</strong> 
+                    using the <strong>${modelType}</strong> model. The forecast interval is <strong>${data.forecast_interval}</strong>.
+                    ${
+                      data.actual && data.actual.length > 0
+                        ? `Actual data is available for comparison, and performance metrics are shown above.`
+                        : `No actual data is available for this period.`
+                    }
+                  `
+                  }
+
+                  // Show results
+                  if (forecastLoading) forecastLoading.style.display = "none"
+                  if (forecastResult) {
+                    forecastResult.style.display = "block"
+
+                    // Add animation
+                    forecastResult.classList.remove("fade-in")
+                    void forecastResult.offsetWidth // Trigger reflow
+                    forecastResult.classList.add("fade-in")
+                  }
+                })
+                .catch((error) => {
+                  console.error("Error:", error)
+                  alert("An error occurred while generating the forecast. Please try again.")
+                  if (forecastLoading) forecastLoading.style.display = "none"
+                })
+            })
+          }
+
+          // Cluster form submission
+          const clusterForm = document.getElementById("cluster-form")
+          const clusterLoading = document.getElementById("cluster-loading")
+          const clusterResult = document.getElementById("cluster-result")
+          const clusterPlot = document.getElementById("cluster-plot")
+          const clusterStatsContainer = document.getElementById("cluster-stats-container")
+
+          if (clusterForm) {
+            clusterForm.addEventListener("submit", (e) => {
+              e.preventDefault()
+
+              // Show loading indicator
+              if (clusterLoading) clusterLoading.style.display = "block"
+              if (clusterResult) clusterResult.style.display = "none"
+
+              // Get form data
+              const formData = new FormData(clusterForm)
+
+              // Send request to server
+              fetch("/cluster", {
+                method: "POST",
+                body: formData,
+              })
+                .then((response) => response.json())
+                .then((data) => {
+                  if (data.error) {
+                    alert(data.error)
+                    if (clusterLoading) clusterLoading.style.display = "none"
+                    return
+                  }
+
+                  // Create interactive cluster plot with Plotly
+                  const traces = []
+
+                  // Get unique clusters
+                  const uniqueClusters = [...new Set(data.clusters)]
+
+                  // Define a color palette for clusters
+                  const colorPalette = [
+                    "#8b5cf6", // Purple
+                    "#10b981", // Green
+                    "#f59e0b", // Amber
+                    "#ef4444", // Red
+                    "#3b82f6", // Blue
+                    "#ec4899", // Pink
+                    "#14b8a6", // Teal
+                    "#f97316", // Orange
+                    "#6366f1", // Indigo
+                    "#84cc16", // Lime
+                  ]
+
+                  // Create a trace for each cluster
+                  uniqueClusters.forEach((cluster, index) => {
+                    const indices = data.clusters.map((c, i) => (c === cluster ? i : -1)).filter((i) => i !== -1)
+
+                    const clusterX = indices.map((i) => data.pca_x[i])
+                    const clusterY = indices.map((i) => data.pca_y[i])
+
+                    // Create hover text with feature values
+                    const hoverTexts = indices.map((i) => {
+                      let text = `<b>Cluster:</b> ${cluster}<br>`
+                      for (const feature in data.feature_values) {
+                        text += `<b>${feature}:</b> ${data.feature_values[feature][i].toFixed(2)}<br>`
+                      }
+                      return text
+                    })
+
+                    traces.push({
+                      x: clusterX,
+                      y: clusterY,
+                      mode: "markers",
+                      type: "scatter",
+                      name: `Cluster ${cluster}`,
+                      marker: {
+                        size: 12,
+                        color: colorPalette[index % colorPalette.length],
+                        line: {
+                          color: "rgba(0, 0, 0, 0.3)",
+                          width: 1,
                         },
+                        opacity: 0.8,
+                      },
+                      text: hoverTexts,
+                      hoverinfo: "text",
+                    })
+                  })
+
+                  const layout = {
+                    title: {
+                      text: `K-Means Clustering (k=${uniqueClusters.length})`,
+                      font: {
+                        family: "Poppins, sans-serif",
+                        size: 24,
+                        color: "#f3f4f6",
+                      },
                     },
+                    xaxis: {
+                      title: {
+                        text: "PCA Component 1",
+                        font: {
+                          family: "Poppins, sans-serif",
+                          size: 14,
+                          color: "#9ca3af",
+                        },
+                      },
+                      showgrid: true,
+                      zeroline: true,
+                      zerolinecolor: "rgba(255,255,255,0.2)",
+                      gridcolor: "rgba(255,255,255,0.1)",
+                      gridwidth: 1,
+                      tickfont: {
+                        family: "Poppins, sans-serif",
+                        size: 12,
+                        color: "#9ca3af",
+                      },
+                    },
+                    yaxis: {
+                      title: {
+                        text: "PCA Component 2",
+                        font: {
+                          family: "Poppins, sans-serif",
+                          size: 14,
+                          color: "#9ca3af",
+                        },
+                      },
+                      showgrid: true,
+                      zeroline: true,
+                      zerolinecolor: "rgba(255,255,255,0.2)",
+                      gridcolor: "rgba(255,255,255,0.1)",
+                      gridwidth: 1,
+                      tickfont: {
+                        family: "Poppins, sans-serif",
+                        size: 12,
+                        color: "#9ca3af",
+                      },
+                    },
+                    hovermode: "closest",
                     legend: {
-                        position: 'top',
-                    }
-                },
-            },
-        });
-    }
-    
-    // Update model comparison chart
-    function updateModelComparisonChart(results) {
-        // Prepare data
-        const models = ["rf", "xgb", "arima", "sarima"];
-        const modelNames = models.map(m => modelInfo[m].name);
-        const mseValues = models.map(m => modelResults[m] ? modelResults[m].mse : 0);
-        const maeValues = models.map(m => modelResults[m] ? modelResults[m].mae : 0);
-        const r2Values = models.map(m => modelResults[m] ? modelResults[m].r2 : 0);
-        
-        // Destroy previous chart if it exists
-        if (modelComparisonChart) {
-            modelComparisonChart.destroy();
-        }
-        
-        // Create new chart
-        const ctx = document.getElementById("model-comparison-chart").getContext("2d");
-        modelComparisonChart = new Chart(ctx, {
-            type: "bar",
-            data: {
-                labels: modelNames,
-                datasets: [
-                    {
-                        label: "Mean Squared Error (MSE)",
-                        data: mseValues,
-                        backgroundColor: "rgba(54, 162, 235, 0.7)",
-                        borderColor: "rgba(54, 162, 235, 1)",
-                        borderWidth: 1,
-                        yAxisID: 'y'
+                      x: 0,
+                      y: 1,
+                      font: {
+                        family: "Poppins, sans-serif",
+                        size: 12,
+                        color: "#f3f4f6",
+                      },
                     },
-                    {
-                        label: "Mean Absolute Error (MAE)",
-                        data: maeValues,
-                        backgroundColor: "rgba(255, 99, 132, 0.7)",
-                        borderColor: "rgba(255, 99, 132, 1)",
-                        borderWidth: 1,
-                        yAxisID: 'y'
+                    margin: {
+                      l: 60,
+                      r: 30,
+                      b: 60,
+                      t: 50,
+                      pad: 4,
                     },
-                    {
-                        label: "R² Score",
-                        data: r2Values,
-                        backgroundColor: "rgba(75, 192, 192, 0.7)",
-                        borderColor: "rgba(75, 192, 192, 1)",
-                        borderWidth: 1,
-                        yAxisID: 'y1'
-                    }
-                ],
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    x: {
-                        title: {
-                            display: true,
-                            text: "Forecasting Model",
-                        },
+                    plot_bgcolor: "rgba(0,0,0,0.2)",
+                    paper_bgcolor: "rgba(0,0,0,0)",
+                    font: {
+                      family: "Poppins, sans-serif",
+                      color: "#f3f4f6",
                     },
-                    y: {
-                        type: 'linear',
-                        position: 'left',
-                        title: {
-                            display: true,
-                            text: "Error Metrics (MSE, MAE)",
-                        },
-                        beginAtZero: true
-                    },
-                    y1: {
-                        type: 'linear',
-                        position: 'right',
-                        title: {
-                            display: true,
-                            text: "R² Score",
-                        },
-                        min: 0,
-                        max: 1,
-                        grid: {
-                            drawOnChartArea: false
-                        }
-                    }
-                },
-                plugins: {
-                    title: {
-                        display: true,
-                        text: `Model Performance Comparison for ${formData.city.toUpperCase()}`,
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                let label = context.dataset.label || '';
-                                if (label) {
-                                    label += ': ';
-                                }
-                                if (context.parsed.y !== null) {
-                                    label += context.parsed.y.toFixed(4);
-                                }
-                                return label;
-                            }
-                        }
-                    }
-                },
-            },
-        });
-    }
+                  }
 
-    // Update metrics display
-    function updateMetrics(data) {
-        const metricsContainer = document.getElementById("forecast-metrics");
-        metricsContainer.innerHTML = "";
-        
-        // Create metric badges
-        const metrics = [
-            { name: "MSE", value: data.mse.toFixed(4) },
-            { name: "MAE", value: data.mae.toFixed(4) },
-            { name: "R²", value: data.r2.toFixed(4) },
-        ];
-        
-        metrics.forEach(function(metric) {
-            const badge = document.createElement("div");
-            badge.className = "metric-badge";
-            badge.textContent = `${metric.name}: ${metric.value}`;
-            metricsContainer.appendChild(badge);
-        });
-        
-        // Add lookback badge
-        const lookbackBadge = document.createElement("div");
-        lookbackBadge.className = "metric-badge";
-        lookbackBadge.style.backgroundColor = "#fff7e6";
-        lookbackBadge.textContent = `Lookback: ${data.lookback} hours`;
-        metricsContainer.appendChild(lookbackBadge);
-        
-        // Add city badge
-        const cityBadge = document.createElement("div");
-        cityBadge.className = "metric-badge";
-        cityBadge.style.backgroundColor = "#f6f6f6";
-        cityBadge.textContent = `City: ${data.city.charAt(0).toUpperCase() + data.city.slice(1)}`;
-        metricsContainer.appendChild(cityBadge);
-    }
-    
+                  const config = {
+                    responsive: true,
+                    displayModeBar: true,
+                    modeBarButtonsToRemove: ["lasso2d", "select2d"],
+                    displaylogo: false,
+                  }
 
-    // Helper function to get model name
-    function getModelName(modelCode) {
-        const models = {
-            rf: "Random Forest",
-            xgb: "XGBoost",
-            arima: "ARIMA",
-            sarima: "SARIMA",
-        };
-        return models[modelCode] || modelCode;
-    }
-</script>
+                  if (clusterPlot) {
+                    Plotly.newPlot(clusterPlot, traces, layout, config)
+                  }
+
+                  // Display cluster statistics
+                  if (clusterStatsContainer) {
+                    clusterStatsContainer.innerHTML = ""
+
+                    // Create a table for cluster statistics
+                    const table = document.createElement("table")
+                    table.className = "table table-striped table-hover"
+
+                    // Create table header
+                    const thead = document.createElement("thead")
+                    thead.innerHTML = `
+                    <tr>
+                      <th>Cluster</th>
+                      <th>Size</th>
+                      <th>Avg. Temp (°F)</th>
+                      <th>Avg. Humidity (%)</th>
+                      <th>Avg. Wind Speed (mph)</th>
+                      <th>Weekend (%)</th>
+                    </tr>
+                  `
+                    table.appendChild(thead)
+
+                    // Create table body
+                    const tbody = document.createElement("tbody")
+                    data.cluster_stats.forEach((stat, index) => {
+                      const row = document.createElement("tr")
+                      row.innerHTML = `
+                      <td>
+                        <span style="display: inline-block; width: 12px; height: 12px; background-color: ${colorPalette[index % colorPalette.length]}; border-radius: 50%; margin-right: 8px;"></span>
+                        ${stat.cluster_id}
+                      </td>
+                      <td>${stat.size}</td>
+                      <td>${stat.avg_temp.toFixed(1)}</td>
+                      <td>${stat.avg_humidity.toFixed(1)}</td>
+                      <td>${stat.avg_wind_speed.toFixed(1)}</td>
+                      <td>${stat.weekend_pct.toFixed(1)}</td>
+                    `
+                      tbody.appendChild(row)
+                    })
+                    table.appendChild(tbody)
+
+                    clusterStatsContainer.appendChild(table)
+                  }
+
+                  // Show results
+                  if (clusterLoading) clusterLoading.style.display = "none"
+                  if (clusterResult) {
+                    clusterResult.style.display = "block"
+
+                    // Add animation
+                    clusterResult.classList.remove("fade-in")
+                    void clusterResult.offsetWidth // Trigger reflow
+                    clusterResult.classList.add("fade-in")
+                  }
+                })
+                .catch((error) => {
+                  console.error("Error:", error)
+                  alert("An error occurred while generating the clusters. Please try again.")
+                  if (clusterLoading) clusterLoading.style.display = "none"
+                })
+            })
+          }
+
+          // Add animation to cards
+          document.querySelectorAll(".card").forEach((card, index) => {
+            card.style.animationDelay = `${index * 0.1}s`
+            card.classList.add("fade-in")
+          })
+
+          // Add glow effect to buttons
+          document.querySelectorAll(".btn-primary").forEach((btn) => {
+            btn.classList.add("btn-glow")
+          })
+        })
+    </script>
 </body>
 </html>
